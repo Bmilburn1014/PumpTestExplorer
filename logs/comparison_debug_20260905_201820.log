@@ -1,0 +1,1830 @@
+Comparison debug log — 2026-09-05T20:18:20.969831
+======================================================================
+
+Selected impeller part numbers: ['2624331']
+======================================================================
+  COMPARISON RUN
+======================================================================
+  px_file:       C:\Users\107087\OneDrive - Grundfos\Desktop\12MBPSD.xlsx
+  date_start:    2024-12-19
+  date_end:      2026-01-01
+  tolerance:     3%
+  test_iteration:3
+  head_col:      tdh_bowl
+  power_col:     power_bowl_dyno
+
+======================================================================
+  PX CURVES
+======================================================================
+  Curve number: 12MBHC-2624331
+  Rated speed:  1775.0
+  Trim count:   5
+    Trim dia=8.96  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=8.6425  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=8.325  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=8.0075  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=7.69  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+
+======================================================================
+  CLASSIFICATION
+======================================================================
+  pump_type:       vertical
+  index_name:      new_test_list
+  trim_column:     impeller_trim
+  bowl_diameter:   12
+  detail_path:     12MB
+  base_model_name: MB
+  impeller_part:   2624331
+
+======================================================================
+  INDEX SEARCH
+======================================================================
+Mixed impellers filter applied using 'mixed_impellers': 81 rows -> 81 rows. Removed=0
+Applied vertical impeller part filter: 81 rows -> 34 rows. Selected=['2624331']
+  Index file path: X:\US\Ind\Prod\Verttest\NEWTESTLISTv.2.xlsx
+  File exists: True
+  Index 'new_test_list': 13570 rows loaded
+  Columns: ['test_date', 'test_id', 'job_number', 'order_type', 'test_run', 'test_type', 'pass_fail', 'bowl_size', 'pump_model', 'fire_pump', 'num_stages', 'configuration', 'mixed_bowl', 'first_stg_size', 'first_stg_model', 'bowl_material', 'imp_part_num', 'imp_material', 'impeller_trim', 'mixed_impellers', 'first_stg_imp', 'first_stg_mat', 'first_stg_trim', 'rated_flow', 'rated_head', 'guaranteed_eff', 'test_grade', 'rpm', 'driver', 'driver_speed', 'customer', 'trim_source', 'trim_source_2', 'failure_cause', 'comments', 'valid_test', 'px_trim', 'px_pass_fail', 'px_eff', 'test_eff', 'test_head', 'test_bep_flow', 'test_bep_head', 'test_bep_eff', 'pattern_notes', 'Column1', '_source_index']
+  Model search regex: ^\s*[A-Za-z]?MB[A-Za-z]?\s*$
+  Unique pump_model values: 54
+  Sample models: [' MA', 'GLLG', 'GLME', 'GLME/LC', 'GLME/MC', 'HD', 'HDX', 'HH']
+  After model filter: 1980 rows (from 13570)
+  After bowl size filter (bowl_size=12): 1980 rows (from 1980)
+  Sample test_date values: ['2024-07-31', '2024-07-31', '2024-07-29', '2024-07-29', '2024-07-26']
+  After date filter [2024-12-19 to 2026-01-01]: 81 rows (from 1980)
+  After test iteration filter: 81 rows (from 81)
+  After mixed impellers filter: 81 rows (from 81)
+  After vertical impeller part filter: 34 rows (from 81)
+
+  Trim column: 'impeller_trim'  found=True  is_vertical=True
+  Raw trim samples:
+    [0] type=str  value='(4) @ 8.62 x 8.62 Fig1. To 0.03125 AS CAST
+  '
+    [1] type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 AS CAST
+  '
+    [2] type=str  value='(1) @ 8.58 x 8.58 Fig1. To 0.03125 As Cast  '
+    [3] type=str  value='(6) @ 8.58 x 8.58 Fig1. To 0.03125 AS CAST
+  '
+    [4] type=str  value='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+
+----------------------------------------------------------------------
+  PER-ROW TRIM PARSING
+----------------------------------------------------------------------
+
+  test_id=99272133080010A1P
+    raw trim: type=str  value='(4) @ 8.62 x 8.62 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.62 x 8.62 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.62 x 8.62  avg=8.6200  contrib=4×8.6200=34.4800
+      [parse_vt] RESULT: 34.4800 / 4 = 8.6200
+      [parse_vt] upper=8.6200  lower=8.6200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.62, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6200, lower=8.6200, conical=no
+    ✓ trim=8.6200, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272126520010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272068280030A2P
+    raw trim: type=str  value='(1) @ 8.58 x 8.58 Fig1. To 0.03125 As Cast  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(1) @ 8.58 x 8.58 Fig1. To 0.03125 As Cast'
+      [parse_vt] regex matched 1 group(s)
+        (1) @ 8.58 x 8.58  avg=8.5800  contrib=1×8.5800=8.5800
+      [parse_vt] RESULT: 8.5800 / 1 = 8.5800
+      [parse_vt] upper=8.5800  lower=8.5800
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.58, num_stages=1, filing='Fig1. To 0.03125'
+    → upper=8.5800, lower=8.5800, conical=no
+    stages fallback: 1 → 1 (from 'num_stages' column)
+    ✓ trim=8.5800, stages=1, rpm=1190.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272149470010A1P
+    raw trim: type=str  value='(6) @ 8.58 x 8.58 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(6) @ 8.58 x 8.58 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (6) @ 8.58 x 8.58  avg=8.5800  contrib=6×8.5800=51.4800
+      [parse_vt] RESULT: 51.4800 / 6 = 8.5800
+      [parse_vt] upper=8.5800  lower=8.5800
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.58, num_stages=6, filing='Fig1. To 0.03125'
+    → upper=8.5800, lower=8.5800, conical=no
+    ✓ trim=8.5800, stages=6, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272145210010A1P
+    raw trim: type=str  value='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (3) @ 8.96 x 8.96  avg=8.9600  contrib=3×8.9600=26.8800
+      [parse_vt] RESULT: 26.8800 / 3 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=3, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=3, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272160560010A1P
+    raw trim: type=str  value='(1) @ 8.69 x 8.69 Fig1. To 0.03125 As Cast
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(1) @ 8.69 x 8.69 Fig1. To 0.03125 As Cast'
+      [parse_vt] regex matched 1 group(s)
+        (1) @ 8.69 x 8.69  avg=8.6900  contrib=1×8.6900=8.6900
+      [parse_vt] RESULT: 8.6900 / 1 = 8.6900
+      [parse_vt] upper=8.6900  lower=8.6900
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.69, num_stages=1, filing='Fig1. To 0.03125'
+    → upper=8.6900, lower=8.6900, conical=no
+    stages fallback: 1 → 1 (from 'num_stages' column)
+    ✓ trim=8.6900, stages=1, rpm=1785.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272162430010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 75Ra
+  '
+      [extract_trim] POLISHED detected in '(4) @ 8.66 x 8.66 Fig1. To 0.03125 75Ra'
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 75Ra'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    → POLISHED impeller detected
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272172120010A1P
+    raw trim: type=str  value='(5) @ 8.82 x 8.82 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.82 x 8.82 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.82 x 8.82  avg=8.8200  contrib=5×8.8200=44.1000
+      [parse_vt] RESULT: 44.1000 / 5 = 8.8200
+      [parse_vt] upper=8.8200  lower=8.8200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.82, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.8200, lower=8.8200, conical=no
+    ✓ trim=8.8200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272178420010A1P
+    raw trim: type=str  value='(6) @ 8.6 x 8.6 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(6) @ 8.6 x 8.6 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (6) @ 8.6 x 8.6  avg=8.6000  contrib=6×8.6000=51.6000
+      [parse_vt] RESULT: 51.6000 / 6 = 8.6000
+      [parse_vt] upper=8.6000  lower=8.6000
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.6, num_stages=6, filing='Fig1. To 0.03125'
+    → upper=8.6000, lower=8.6000, conical=no
+    ✓ trim=8.6000, stages=6, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272188670010A1P
+    raw trim: type=str  value='(7) @ 8.9 x 8.9 Fig1. To 0.03125 75Ra
+  '
+      [extract_trim] POLISHED detected in '(7) @ 8.9 x 8.9 Fig1. To 0.03125 75Ra'
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(7) @ 8.9 x 8.9 Fig1. To 0.03125 75Ra'
+      [parse_vt] regex matched 1 group(s)
+        (7) @ 8.9 x 8.9  avg=8.9000  contrib=7×8.9000=62.3000
+      [parse_vt] RESULT: 62.3000 / 7 = 8.9000
+      [parse_vt] upper=8.9000  lower=8.9000
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.9, num_stages=7, filing='Fig1. To 0.03125'
+    → upper=8.9000, lower=8.9000, conical=no
+    → POLISHED impeller detected
+    ✓ trim=8.9000, stages=7, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272196350010A1P
+    raw trim: type=str  value='(2) @ 8.62 x 8.62 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(2) @ 8.62 x 8.62 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (2) @ 8.62 x 8.62  avg=8.6200  contrib=2×8.6200=17.2400
+      [parse_vt] RESULT: 17.2400 / 2 = 8.6200
+      [parse_vt] upper=8.6200  lower=8.6200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.62, num_stages=2, filing='Fig1. To 0.03125'
+    → upper=8.6200, lower=8.6200, conical=no
+    ✓ trim=8.6200, stages=2, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272195800010A1P
+    raw trim: type=str  value='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (3) @ 8.96 x 8.96  avg=8.9600  contrib=3×8.9600=26.8800
+      [parse_vt] RESULT: 26.8800 / 3 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=3, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=3, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272195800010B1P
+    raw trim: type=str  value='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (3) @ 8.96 x 8.96  avg=8.9600  contrib=3×8.9600=26.8800
+      [parse_vt] RESULT: 26.8800 / 3 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=3, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=3, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272195800010B1P
+    raw trim: type=str  value='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(3) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (3) @ 8.96 x 8.96  avg=8.9600  contrib=3×8.9600=26.8800
+      [parse_vt] RESULT: 26.8800 / 3 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=3, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=3, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272201090010A1P
+    raw trim: type=str  value='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.7 x 8.7  avg=8.7000  contrib=5×8.7000=43.5000
+      [parse_vt] RESULT: 43.5000 / 5 = 8.7000
+      [parse_vt] upper=8.7000  lower=8.7000
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.7, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7000, lower=8.7000, conical=no
+    ✓ trim=8.7000, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272165710010A1P
+    raw trim: type=str  value='(10) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(10) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (10) @ 8.76 x 8.76  avg=8.7600  contrib=10×8.7600=87.6000
+      [parse_vt] RESULT: 87.6000 / 10 = 8.7600
+      [parse_vt] upper=8.7600  lower=8.7600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.76, num_stages=10, filing='Fig1. To 0.03125'
+    → upper=8.7600, lower=8.7600, conical=no
+    ✓ trim=8.7600, stages=10, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272212100010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272198520010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 As Cast
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 As Cast'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272205420010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 75RA
+  '
+      [extract_trim] POLISHED detected in '(4) @ 8.66 x 8.66 Fig1. To 0.03125 75RA'
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 75RA'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    → POLISHED impeller detected
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272213380010A1P
+    raw trim: type=str  value='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.76 x 8.76  avg=8.7600  contrib=5×8.7600=43.8000
+      [parse_vt] RESULT: 43.8000 / 5 = 8.7600
+      [parse_vt] upper=8.7600  lower=8.7600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.76, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7600, lower=8.7600, conical=no
+    ✓ trim=8.7600, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272206500010A1P
+    raw trim: type=str  value='(5) @ 8.88 x 8.88 Fig1. To 0.03125 As Cast
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.88 x 8.88 Fig1. To 0.03125 As Cast'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.88 x 8.88  avg=8.8800  contrib=5×8.8800=44.4000
+      [parse_vt] RESULT: 44.4000 / 5 = 8.8800
+      [parse_vt] upper=8.8800  lower=8.8800
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.88, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.8800, lower=8.8800, conical=no
+    ✓ trim=8.8800, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272213380010B1P
+    raw trim: type=str  value='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.76 x 8.76  avg=8.7600  contrib=5×8.7600=43.8000
+      [parse_vt] RESULT: 43.8000 / 5 = 8.7600
+      [parse_vt] upper=8.7600  lower=8.7600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.76, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7600, lower=8.7600, conical=no
+    ✓ trim=8.7600, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272214760040A1P
+    raw trim: type=str  value='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.76 x 8.76 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.76 x 8.76  avg=8.7600  contrib=5×8.7600=43.8000
+      [parse_vt] RESULT: 43.8000 / 5 = 8.7600
+      [parse_vt] upper=8.7600  lower=8.7600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.76, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7600, lower=8.7600, conical=no
+    ✓ trim=8.7600, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272174140010A1P
+    raw trim: type=str  value='(4) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.96 x 8.96  avg=8.9600  contrib=4×8.9600=35.8400
+      [parse_vt] RESULT: 35.8400 / 4 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=4, rpm=1785.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272230080010A1P
+    raw trim: type=str  value='(5) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.96 x 8.96 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.96 x 8.96  avg=8.9600  contrib=5×8.9600=44.8000
+      [parse_vt] RESULT: 44.8000 / 5 = 8.9600
+      [parse_vt] upper=8.9600  lower=8.9600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.96, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.9600, lower=8.9600, conical=no
+    ✓ trim=8.9600, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272230180010A1P
+    raw trim: type=str  value='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.72 x 8.72  avg=8.7200  contrib=5×8.7200=43.6000
+      [parse_vt] RESULT: 43.6000 / 5 = 8.7200
+      [parse_vt] upper=8.7200  lower=8.7200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.72, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7200, lower=8.7200, conical=no
+    ✓ trim=8.7200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272230330010A1P
+    raw trim: type=str  value='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.72 x 8.72  avg=8.7200  contrib=5×8.7200=43.6000
+      [parse_vt] RESULT: 43.6000 / 5 = 8.7200
+      [parse_vt] upper=8.7200  lower=8.7200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.72, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7200, lower=8.7200, conical=no
+    ✓ trim=8.7200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272230190010A1P
+    raw trim: type=str  value='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.72 x 8.72  avg=8.7200  contrib=5×8.7200=43.6000
+      [parse_vt] RESULT: 43.6000 / 5 = 8.7200
+      [parse_vt] upper=8.7200  lower=8.7200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.72, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7200, lower=8.7200, conical=no
+    ✓ trim=8.7200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272232080010A1P
+    raw trim: type=str  value='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.72 x 8.72  avg=8.7200  contrib=5×8.7200=43.6000
+      [parse_vt] RESULT: 43.6000 / 5 = 8.7200
+      [parse_vt] upper=8.7200  lower=8.7200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.72, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7200, lower=8.7200, conical=no
+    ✓ trim=8.7200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272232080010A1P
+    raw trim: type=str  value='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.72 x 8.72 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.72 x 8.72  avg=8.7200  contrib=5×8.7200=43.6000
+      [parse_vt] RESULT: 43.6000 / 5 = 8.7200
+      [parse_vt] upper=8.7200  lower=8.7200
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.72, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7200, lower=8.7200, conical=no
+    ✓ trim=8.7200, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272224170010A1P
+    raw trim: type=str  value='(3) @ 8.78 x 8.78 Fig1. To 0.03125 75Ra
+  '
+      [extract_trim] POLISHED detected in '(3) @ 8.78 x 8.78 Fig1. To 0.03125 75Ra'
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(3) @ 8.78 x 8.78 Fig1. To 0.03125 75Ra'
+      [parse_vt] regex matched 1 group(s)
+        (3) @ 8.78 x 8.78  avg=8.7800  contrib=3×8.7800=26.3400
+      [parse_vt] RESULT: 26.3400 / 3 = 8.7800
+      [parse_vt] upper=8.7800  lower=8.7800
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.78, num_stages=3, filing='Fig1. To 0.03125'
+    → upper=8.7800, lower=8.7800, conical=no
+    → POLISHED impeller detected
+    ✓ trim=8.7800, stages=3, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272254750010A1P
+    raw trim: type=str  value='(4) @ 8.66 x 8.66 Fig1. To 0.03125 As Cast
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(4) @ 8.66 x 8.66 Fig1. To 0.03125 As Cast'
+      [parse_vt] regex matched 1 group(s)
+        (4) @ 8.66 x 8.66  avg=8.6600  contrib=4×8.6600=34.6400
+      [parse_vt] RESULT: 34.6400 / 4 = 8.6600
+      [parse_vt] upper=8.6600  lower=8.6600
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.66, num_stages=4, filing='Fig1. To 0.03125'
+    → upper=8.6600, lower=8.6600, conical=no
+    ✓ trim=8.6600, stages=4, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272244030010A1P
+    raw trim: type=str  value='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.7 x 8.7  avg=8.7000  contrib=5×8.7000=43.5000
+      [parse_vt] RESULT: 43.5000 / 5 = 8.7000
+      [parse_vt] upper=8.7000  lower=8.7000
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.7, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7000, lower=8.7000, conical=no
+    ✓ trim=8.7000, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  test_id=99272253040010A1P
+    raw trim: type=str  value='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST
+  '
+      [extract_trim] is_vertical=True  has_@=True
+      [extract_trim] → _parse_vertical_trim
+      [parse_vt] input='(5) @ 8.7 x 8.7 Fig1. To 0.03125 AS CAST'
+      [parse_vt] regex matched 1 group(s)
+        (5) @ 8.7 x 8.7  avg=8.7000  contrib=5×8.7000=43.5000
+      [parse_vt] RESULT: 43.5000 / 5 = 8.7000
+      [parse_vt] upper=8.7000  lower=8.7000
+      [parse_vt] filing_info='Fig1. To 0.03125'
+    → trim_diameter=8.7, num_stages=5, filing='Fig1. To 0.03125'
+    → upper=8.7000, lower=8.7000, conical=no
+    ✓ trim=8.7000, stages=5, rpm=1760.0, model='MB', filing='Fig1. To 0.03125'
+
+  Total matches: 34, skipped (no trim): 0
+  Unique trims: ['8.5800', '8.6000', '8.6200', '8.6600', '8.6900', '8.7000', '8.7200', '8.7600', '8.7800', '8.8200', '8.8800', '8.9000', '8.9600']
+  Unique stages: [1, 2, 3, 4, 5, 6, 7, 10]
+
+======================================================================
+  TRIM GROUPING
+======================================================================
+  PX baseline diameters: [8.96, 8.6425, 8.325, 8.0075, 7.69]
+  PX baseline speed:     1775.0
+  Tolerance:             3%
+  Input tests:           34
+
+  Speed filter: 34 kept, 0 excluded
+
+  [TRIM] 99272133080010A1P: test_trim=8.6200 → nearest_px=8.6425  diff=0.26%  ASSIGNED
+  [TRIM] 99272126520010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272068280030A2P: test_trim=8.5800 → nearest_px=8.6425  diff=0.72%  ASSIGNED
+  [TRIM] 99272149470010A1P: test_trim=8.5800 → nearest_px=8.6425  diff=0.72%  ASSIGNED
+  [TRIM] 99272145210010A1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272160560010A1P: test_trim=8.6900 → nearest_px=8.6425  diff=0.55%  ASSIGNED
+  [TRIM] 99272162430010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272172120010A1P: test_trim=8.8200 → nearest_px=8.9600  diff=1.56%  ASSIGNED
+  [TRIM] 99272178420010A1P: test_trim=8.6000 → nearest_px=8.6425  diff=0.49%  ASSIGNED
+  [TRIM] 99272188670010A1P: test_trim=8.9000 → nearest_px=8.9600  diff=0.67%  ASSIGNED
+  [TRIM] 99272196350010A1P: test_trim=8.6200 → nearest_px=8.6425  diff=0.26%  ASSIGNED
+  [TRIM] 99272195800010A1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272195800010B1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272195800010B1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272201090010A1P: test_trim=8.7000 → nearest_px=8.6425  diff=0.67%  ASSIGNED
+  [TRIM] 99272165710010A1P: test_trim=8.7600 → nearest_px=8.6425  diff=1.36%  ASSIGNED
+  [TRIM] 99272212100010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272198520010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272205420010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272213380010A1P: test_trim=8.7600 → nearest_px=8.6425  diff=1.36%  ASSIGNED
+  [TRIM] 99272206500010A1P: test_trim=8.8800 → nearest_px=8.9600  diff=0.89%  ASSIGNED
+  [TRIM] 99272213380010B1P: test_trim=8.7600 → nearest_px=8.6425  diff=1.36%  ASSIGNED
+  [TRIM] 99272214760040A1P: test_trim=8.7600 → nearest_px=8.6425  diff=1.36%  ASSIGNED
+  [TRIM] 99272174140010A1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272230080010A1P: test_trim=8.9600 → nearest_px=8.9600  diff=0.00%  ASSIGNED
+  [TRIM] 99272230180010A1P: test_trim=8.7200 → nearest_px=8.6425  diff=0.90%  ASSIGNED
+  [TRIM] 99272230330010A1P: test_trim=8.7200 → nearest_px=8.6425  diff=0.90%  ASSIGNED
+  [TRIM] 99272230190010A1P: test_trim=8.7200 → nearest_px=8.6425  diff=0.90%  ASSIGNED
+  [TRIM] 99272232080010A1P: test_trim=8.7200 → nearest_px=8.6425  diff=0.90%  ASSIGNED
+  [TRIM] 99272232080010A1P: test_trim=8.7200 → nearest_px=8.6425  diff=0.90%  ASSIGNED
+  [TRIM] 99272224170010A1P: test_trim=8.7800 → nearest_px=8.6425  diff=1.59%  ASSIGNED
+  [TRIM] 99272254750010A1P: test_trim=8.6600 → nearest_px=8.6425  diff=0.20%  ASSIGNED
+  [TRIM] 99272244030010A1P: test_trim=8.7000 → nearest_px=8.6425  diff=0.67%  ASSIGNED
+  [TRIM] 99272253040010A1P: test_trim=8.7000 → nearest_px=8.6425  diff=0.67%  ASSIGNED
+
+  ── [GROUP] PX baseline=8.9600 ──
+    tests:        9
+    trims:        ['8.9600', '8.8200', '8.9000', '8.9600', '8.9600', '8.9600', '8.8800', '8.9600', '8.9600']
+    avg_trim:     8.9289
+    dia_ratio:    8.9600 / 8.9289 = 1.003484
+    avg_rpm:      1762.8
+    speed_ratio:  1775.0 / 1762.8 = 1.006934
+  ── [GROUP] PX baseline=8.6425 ──
+    tests:        25
+    trims:        ['8.6200', '8.6600', '8.5800', '8.5800', '8.6900', '8.6600', '8.6000', '8.6200', '8.7000', '8.7600', '8.6600', '8.6600', '8.6600', '8.7600', '8.7600', '8.7600', '8.7200', '8.7200', '8.7200', '8.7200', '8.7200', '8.7800', '8.6600', '8.7000', '8.7000']
+    avg_trim:     8.6868
+    dia_ratio:    8.6425 / 8.6868 = 0.994900
+    avg_rpm:      1738.2
+    speed_ratio:  1775.0 / 1738.2 = 1.021171
+   [GROUP EMPTY] PX=8.3250: no tests
+   [GROUP EMPTY] PX=8.0075: no tests
+   [GROUP EMPTY] PX=7.6900: no tests
+  [PATH] 99272145210010A1P → CACHED (skip resolve)
+  [PATH] 99272172120010A1P → CACHED (skip resolve)
+  [PATH] 99272188670010A1P → CACHED (skip resolve)
+  [PATH] 99272195800010A1P → CACHED (skip resolve)
+  [PATH] 99272195800010B1P → CACHED (skip resolve)
+  [PATH] 99272195800010B1P → CACHED (skip resolve)
+  [PATH] 99272206500010A1P → CACHED (skip resolve)
+  [PATH] 99272174140010A1P → CACHED (skip resolve)
+  [PATH] 99272230080010A1P → CACHED (skip resolve)
+  [PATH] 99272133080010A1P → CACHED (skip resolve)
+  [PATH] 99272126520010A1P → CACHED (skip resolve)
+  [PATH] 99272068280030A2P → CACHED (skip resolve)
+  [PATH] 99272149470010A1P → CACHED (skip resolve)
+  [PATH] 99272160560010A1P → CACHED (skip resolve)
+  [PATH] 99272162430010A1P → CACHED (skip resolve)
+  [PATH] 99272178420010A1P → CACHED (skip resolve)
+  [PATH] 99272196350010A1P → CACHED (skip resolve)
+  [PATH] 99272201090010A1P → CACHED (skip resolve)
+  [PATH] 99272165710010A1P → CACHED (skip resolve)
+  [PATH] 99272212100010A1P → CACHED (skip resolve)
+  [PATH] 99272198520010A1P → CACHED (skip resolve)
+  [PATH] 99272205420010A1P → CACHED (skip resolve)
+  [PATH] 99272213380010A1P → CACHED (skip resolve)
+  [PATH] 99272213380010B1P → CACHED (skip resolve)
+  [PATH] 99272214760040A1P → CACHED (skip resolve)
+  [PATH] 99272230180010A1P → CACHED (skip resolve)
+  [PATH] 99272230330010A1P → CACHED (skip resolve)
+  [PATH] 99272230190010A1P → CACHED (skip resolve)
+  [PATH] 99272232080010A1P → CACHED (skip resolve)
+  [PATH] 99272232080010A1P → CACHED (skip resolve)
+  [PATH] 99272224170010A1P → CACHED (skip resolve)
+  [PATH] 99272254750010A1P → CACHED (skip resolve)
+  [PATH] 99272244030010A1P → CACHED (skip resolve)
+  [PATH] 99272253040010A1P → CACHED (skip resolve)
+  34 cached, 0 found, 0 to copy
+
+======================================================================
+  DETAIL DATA + SCALING
+======================================================================
+
+  ── Group: PX baseline=8.9600, 9 tests, affinity=True ──
+
+  ── [LOAD+SCALE] 99272145210010A1P ──
+    trim=8.9600, stages=3, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['8.02', '602.44', '792.90', '970.22', '991.43', '1032.81', '1204.33', '1516.10', '1608.36', '1746.38', '1862.53']
+    head ('tdh_bowl'): 11 pts
+      values: ['256.04', '226.78', '223.28', '215.07', '213.61', '210.89', '197.22', '161.96', '150.81', '133.07', '108.94']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['36.5126', '54.7813', '62.1503', '68.1806', '68.7715', '69.7979', '73.8594', '77.5612', '77.8601', '77.3641', '75.6617']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['1.42', '62.87', '71.81', '77.15', '77.63', '78.67', '81.07', '79.81', '78.53', '75.73', '67.61']
+    [STAGE NORM] 3-stage → dividing head & power by 3
+      head BEFORE: ['256.04', '226.78', '223.28', '215.07', '213.61', '210.89', '197.22', '161.96', '150.81', '133.07', '108.94']
+      head AFTER:  ['85.35', '75.59', '74.43', '71.69', '71.20', '70.30', '65.74', '53.99', '50.27', '44.36', '36.31']
+      power BEFORE: ['36.5126', '54.7813', '62.1503', '68.1806', '68.7715', '69.7979', '73.8594', '77.5612', '77.8601', '77.3641', '75.6617']
+      power AFTER:  ['12.1709', '18.2604', '20.7168', '22.7269', '22.9238', '23.2660', '24.6198', '25.8537', '25.9534', '25.7880', '25.2206']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['8.09', '607.57', '799.65', '978.49', '999.88', '1041.61', '1214.59', '1529.02', '1622.07', '1761.26', '1878.40']
+      scaled_head:  ['86.81', '76.89', '75.70', '72.92', '72.42', '71.50', '66.86', '54.91', '51.13', '45.12', '36.94']
+      scaled_power: ['12.4847', '18.7313', '21.2510', '23.3129', '23.5150', '23.8659', '25.2547', '26.5204', '26.6226', '26.4530', '25.8709']
+    [FINAL] plotted_flow:  [8.09 → 1878.40]
+    [FINAL] plotted_head:  [86.81 → 36.94]
+    [FINAL] plotted_power: [12.4847 → 25.8709]
+    [FINAL] plotted_eff:   [1.42 → 67.61]
+
+  ── [LOAD+SCALE] 99272172120010A1P ──
+    trim=8.8200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '609.86', '822.52', '976.49', '998.56', '1004.43', '1027.04', '1198.23', '1351.53', '1503.29', '1595.44', '1657.11']
+    head ('tdh_bowl'): 12 pts
+      values: ['404.70', '357.18', '347.54', '332.18', '329.85', '328.76', '325.89', '302.00', '274.33', '241.42', '221.35', '205.56']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['54.2624', '83.9045', '96.8108', '103.9614', '104.7579', '105.1631', '105.8573', '111.1231', '113.8053', '114.4211', '114.0581', '113.4875']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '65.45', '74.44', '78.65', '79.26', '79.16', '79.71', '82.09', '82.13', '79.96', '78.05', '75.66']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['404.70', '357.18', '347.54', '332.18', '329.85', '328.76', '325.89', '302.00', '274.33', '241.42', '221.35', '205.56']
+      head AFTER:  ['80.94', '71.44', '69.51', '66.44', '65.97', '65.75', '65.18', '60.40', '54.87', '48.28', '44.27', '41.11']
+      power BEFORE: ['54.2624', '83.9045', '96.8108', '103.9614', '104.7579', '105.1631', '105.8573', '111.1231', '113.8053', '114.4211', '114.0581', '113.4875']
+      power AFTER:  ['10.8525', '16.7809', '19.3622', '20.7923', '20.9516', '21.0326', '21.1715', '22.2246', '22.7611', '22.8842', '22.8116', '22.6975']
+    [AFFINITY]
+      test_diameter:     8.8200
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.8200 = 1.015873
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '624.82', '842.70', '1000.44', '1023.06', '1029.07', '1052.23', '1227.63', '1384.69', '1540.17', '1634.58', '1697.76']
+      scaled_head:  ['84.96', '74.98', '72.96', '69.74', '69.25', '69.02', '68.42', '63.40', '57.59', '50.68', '46.47', '43.15']
+      scaled_power: ['11.6709', '18.0464', '20.8223', '22.3603', '22.5316', '22.6188', '22.7681', '23.9006', '24.4775', '24.6100', '24.5319', '24.4092']
+    [FINAL] plotted_flow:  [0.00 → 1697.76]
+    [FINAL] plotted_head:  [84.96 → 43.15]
+    [FINAL] plotted_power: [11.6709 → 24.4092]
+    [FINAL] plotted_eff:   [0.00 → 75.66]
+
+  ── [LOAD+SCALE] 99272188670010A1P ──
+    trim=8.9000, stages=7, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 13
+    flow: 13 pts
+      values: ['0.00', '600.72', '789.18', '982.28', '1002.48', '1018.05', '1214.27', '1401.35', '1497.81', '1608.00', '1740.61', '1853.44', '1946.18']
+    head ('tdh_bowl'): 13 pts
+      values: ['578.89', '516.02', '506.67', '485.37', '482.37', '479.47', '442.30', '394.77', '367.37', '336.16', '292.80', '245.73', '200.57']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 13 pts
+      values: ['73.2128', '118.0264', '136.2188', '151.8541', '153.0813', '154.0085', '164.2578', '169.6165', '170.6004', '170.4658', '170.5736', '167.6101', '162.6721']
+    efficiency ('eff_bowl_motor'): 13 pts
+      values: ['0.00', '66.21', '74.00', '79.15', '79.63', '79.90', '82.42', '82.22', '81.31', '79.94', '75.32', '68.50', '60.49']
+    [STAGE NORM] 7-stage → dividing head & power by 7
+      head BEFORE: ['578.89', '516.02', '506.67', '485.37', '482.37', '479.47', '442.30', '394.77', '367.37', '336.16', '292.80', '245.73', '200.57']
+      head AFTER:  ['82.70', '73.72', '72.38', '69.34', '68.91', '68.50', '63.19', '56.40', '52.48', '48.02', '41.83', '35.10', '28.65']
+      power BEFORE: ['73.2128', '118.0264', '136.2188', '151.8541', '153.0813', '154.0085', '164.2578', '169.6165', '170.6004', '170.4658', '170.5736', '167.6101', '162.6721']
+      power AFTER:  ['10.4590', '16.8609', '19.4598', '21.6934', '21.8688', '22.0012', '23.4654', '24.2309', '24.3715', '24.3523', '24.3677', '23.9443', '23.2389']
+    [AFFINITY]
+      test_diameter:     8.9000
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9000 = 1.006742
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '609.93', '801.27', '997.33', '1017.84', '1033.65', '1232.88', '1422.83', '1520.76', '1632.64', '1767.28', '1881.84', '1976.00']
+      scaled_head:  ['85.25', '75.99', '74.62', '71.48', '71.04', '70.61', '65.14', '58.14', '54.10', '49.51', '43.12', '36.19', '29.54']
+      scaled_power: ['10.9471', '17.6479', '20.3681', '22.7059', '22.8894', '23.0281', '24.5606', '25.3619', '25.5090', '25.4889', '25.5050', '25.0619', '24.3235']
+    [FINAL] plotted_flow:  [0.00 → 1976.00]
+    [FINAL] plotted_head:  [85.25 → 29.54]
+    [FINAL] plotted_power: [10.9471 → 24.3235]
+    [FINAL] plotted_eff:   [0.00 → 60.49]
+
+  ── [LOAD+SCALE] 99272195800010A1P ──
+    trim=8.9600, stages=3, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '400.10', '797.69', '971.93', '1004.64', '1025.94', '1214.27', '1516.02', '1646.03', '1746.49', '1849.81']
+    head ('tdh_bowl'): 11 pts
+      values: ['249.26', '227.52', '218.75', '210.22', '207.87', '206.41', '190.68', '155.64', '136.81', '120.17', '97.92']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['31.8194', '44.0071', '61.5911', '67.7527', '68.6528', '69.3279', '73.7099', '77.1698', '77.1010', '76.7822', '75.2609']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '52.15', '71.42', '76.02', '76.68', '77.00', '79.18', '77.08', '73.63', '68.91', '60.67']
+    [STAGE NORM] 3-stage → dividing head & power by 3
+      head BEFORE: ['249.26', '227.52', '218.75', '210.22', '207.87', '206.41', '190.68', '155.64', '136.81', '120.17', '97.92']
+      head AFTER:  ['83.09', '75.84', '72.92', '70.07', '69.29', '68.80', '63.56', '51.88', '45.60', '40.06', '32.64']
+      power BEFORE: ['31.8194', '44.0071', '61.5911', '67.7527', '68.6528', '69.3279', '73.7099', '77.1698', '77.1010', '76.7822', '75.2609']
+      power AFTER:  ['10.6065', '14.6690', '20.5304', '22.5842', '22.8843', '23.1093', '24.5700', '25.7233', '25.7003', '25.5941', '25.0870']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '403.51', '804.49', '980.21', '1013.20', '1034.68', '1224.62', '1528.94', '1660.06', '1761.37', '1865.58']
+      scaled_head:  ['84.51', '77.14', '74.16', '71.27', '70.48', '69.98', '64.65', '52.77', '46.38', '40.74', '33.20']
+      scaled_power: ['10.8800', '15.0473', '21.0598', '23.1666', '23.4744', '23.7052', '25.2036', '26.3866', '26.3631', '26.2540', '25.7339']
+    [FINAL] plotted_flow:  [0.00 → 1865.58]
+    [FINAL] plotted_head:  [84.51 → 33.20]
+    [FINAL] plotted_power: [10.8800 → 25.7339]
+    [FINAL] plotted_eff:   [0.00 → 60.67]
+
+  ── [LOAD+SCALE] 99272195800010B1P ──
+    trim=8.9600, stages=3, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '406.02', '792.41', '975.32', '1004.14', '1024.72', '1220.05', '1517.95', '1640.52', '1737.92', '1845.97']
+    head ('tdh_bowl'): 11 pts
+      values: ['252.83', '226.72', '218.05', '208.55', '206.27', '205.08', '189.23', '152.98', '135.75', '119.49', '97.16']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['33.8500', '44.0307', '60.8187', '67.1742', '68.0331', '68.5655', '73.0129', '76.3650', '76.3988', '76.0151', '74.6304']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '52.70', '71.62', '76.33', '76.75', '77.27', '79.71', '76.66', '73.48', '68.87', '60.58']
+    [STAGE NORM] 3-stage → dividing head & power by 3
+      head BEFORE: ['252.83', '226.72', '218.05', '208.55', '206.27', '205.08', '189.23', '152.98', '135.75', '119.49', '97.16']
+      head AFTER:  ['84.28', '75.57', '72.68', '69.52', '68.76', '68.36', '63.08', '50.99', '45.25', '39.83', '32.39']
+      power BEFORE: ['33.8500', '44.0307', '60.8187', '67.1742', '68.0331', '68.5655', '73.0129', '76.3650', '76.3988', '76.0151', '74.6304']
+      power AFTER:  ['11.2833', '14.6769', '20.2729', '22.3914', '22.6777', '22.8552', '24.3376', '25.4550', '25.4663', '25.3384', '24.8768']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '409.48', '799.16', '983.63', '1012.70', '1033.46', '1230.45', '1530.89', '1654.50', '1752.74', '1861.70']
+      scaled_head:  ['85.72', '76.87', '73.93', '70.71', '69.93', '69.53', '64.16', '51.87', '46.02', '40.51', '32.94']
+      scaled_power: ['11.5743', '15.0554', '20.7957', '22.9688', '23.2625', '23.4445', '24.9652', '26.1114', '26.1230', '25.9918', '25.5183']
+    [FINAL] plotted_flow:  [0.00 → 1861.70]
+    [FINAL] plotted_head:  [85.72 → 32.94]
+    [FINAL] plotted_power: [11.5743 → 25.5183]
+    [FINAL] plotted_eff:   [0.00 → 60.58]
+
+  ── [LOAD+SCALE] 99272195800010B1P ──
+    trim=8.9600, stages=3, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '406.02', '792.41', '975.32', '1004.14', '1024.72', '1220.05', '1517.95', '1640.52', '1737.92', '1845.97']
+    head ('tdh_bowl'): 11 pts
+      values: ['252.83', '226.72', '218.05', '208.55', '206.27', '205.08', '189.23', '152.98', '135.75', '119.49', '97.16']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['33.8500', '44.0307', '60.8187', '67.1742', '68.0331', '68.5655', '73.0129', '76.3650', '76.3988', '76.0151', '74.6304']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '52.70', '71.62', '76.33', '76.75', '77.27', '79.71', '76.66', '73.48', '68.87', '60.58']
+    [STAGE NORM] 3-stage → dividing head & power by 3
+      head BEFORE: ['252.83', '226.72', '218.05', '208.55', '206.27', '205.08', '189.23', '152.98', '135.75', '119.49', '97.16']
+      head AFTER:  ['84.28', '75.57', '72.68', '69.52', '68.76', '68.36', '63.08', '50.99', '45.25', '39.83', '32.39']
+      power BEFORE: ['33.8500', '44.0307', '60.8187', '67.1742', '68.0331', '68.5655', '73.0129', '76.3650', '76.3988', '76.0151', '74.6304']
+      power AFTER:  ['11.2833', '14.6769', '20.2729', '22.3914', '22.6777', '22.8552', '24.3376', '25.4550', '25.4663', '25.3384', '24.8768']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '409.48', '799.16', '983.63', '1012.70', '1033.46', '1230.45', '1530.89', '1654.50', '1752.74', '1861.70']
+      scaled_head:  ['85.72', '76.87', '73.93', '70.71', '69.93', '69.53', '64.16', '51.87', '46.02', '40.51', '32.94']
+      scaled_power: ['11.5743', '15.0554', '20.7957', '22.9688', '23.2625', '23.4445', '24.9652', '26.1114', '26.1230', '25.9918', '25.5183']
+    [FINAL] plotted_flow:  [0.00 → 1861.70]
+    [FINAL] plotted_head:  [85.72 → 32.94]
+    [FINAL] plotted_power: [11.5743 → 25.5183]
+    [FINAL] plotted_eff:   [0.00 → 60.58]
+
+  ── [LOAD+SCALE] 99272206500010A1P ──
+    trim=8.8800, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '594.86', '805.91', '970.03', '1005.58', '1021.71', '1197.10', '1355.08', '1504.16', '1598.32', '1705.61']
+    head ('tdh_bowl'): 11 pts
+      values: ['415.51', '360.59', '351.49', '334.77', '330.46', '328.15', '302.50', '272.32', '238.30', '213.77', '186.19']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['56.9658', '83.6865', '97.0342', '105.5591', '107.0263', '107.7728', '113.7017', '116.6692', '117.6151', '116.6398', '116.1012']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '64.61', '73.59', '77.55', '78.27', '78.42', '80.29', '79.73', '76.83', '73.84', '68.95']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['415.51', '360.59', '351.49', '334.77', '330.46', '328.15', '302.50', '272.32', '238.30', '213.77', '186.19']
+      head AFTER:  ['83.10', '72.12', '70.30', '66.95', '66.09', '65.63', '60.50', '54.46', '47.66', '42.75', '37.24']
+      power BEFORE: ['56.9658', '83.6865', '97.0342', '105.5591', '107.0263', '107.7728', '113.7017', '116.6692', '117.6151', '116.6398', '116.1012']
+      power AFTER:  ['11.3932', '16.7373', '19.4068', '21.1118', '21.4053', '21.5546', '22.7403', '23.3338', '23.5230', '23.3280', '23.2202']
+    [AFFINITY]
+      test_diameter:     8.8800
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.8800 = 1.009009
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '605.34', '820.10', '987.11', '1023.29', '1039.70', '1218.18', '1378.94', '1530.65', '1626.47', '1735.64']
+      scaled_head:  ['86.05', '74.68', '72.79', '69.33', '68.44', '67.96', '62.65', '56.40', '49.35', '44.27', '38.56']
+      scaled_power: ['12.0057', '17.6371', '20.4502', '22.2468', '22.5560', '22.7134', '23.9629', '24.5883', '24.7876', '24.5821', '24.4686']
+    [FINAL] plotted_flow:  [0.00 → 1735.64]
+    [FINAL] plotted_head:  [86.05 → 38.56]
+    [FINAL] plotted_power: [12.0057 → 24.4686]
+    [FINAL] plotted_eff:   [0.00 → 68.95]
+
+  ── [LOAD+SCALE] 99272174140010A1P ──
+    trim=8.9600, stages=4, rpm=1785.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 13
+    flow: 13 pts
+      values: ['0.00', '442.79', '689.53', '863.93', '1077.80', '1100.81', '1105.01', '1118.25', '1276.44', '1492.74', '1674.99', '1815.45', '1858.71']
+    head ('tdh_bowl'): 13 pts
+      values: ['344.04', '308.98', '303.02', '296.15', '278.10', '275.52', '275.02', '273.68', '254.70', '218.57', '186.03', '152.94', '111.67']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 13 pts
+      values: ['44.7286', '61.1757', '75.9879', '85.8353', '94.6785', '95.3040', '95.5527', '96.0065', '99.9383', '102.7783', '102.5046', '101.5657', '94.9484']
+    efficiency ('eff_bowl_motor'): 13 pts
+      values: ['0.00', '56.46', '69.42', '75.25', '79.92', '80.34', '80.29', '80.47', '82.13', '80.14', '76.74', '69.01', '55.19']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['344.04', '308.98', '303.02', '296.15', '278.10', '275.52', '275.02', '273.68', '254.70', '218.57', '186.03', '152.94', '111.67']
+      head AFTER:  ['86.01', '77.25', '75.75', '74.04', '69.52', '68.88', '68.76', '68.42', '63.68', '54.64', '46.51', '38.23', '27.92']
+      power BEFORE: ['44.7286', '61.1757', '75.9879', '85.8353', '94.6785', '95.3040', '95.5527', '96.0065', '99.9383', '102.7783', '102.5046', '101.5657', '94.9484']
+      power AFTER:  ['11.1821', '15.2939', '18.9970', '21.4588', '23.6696', '23.8260', '23.8882', '24.0016', '24.9846', '25.6946', '25.6261', '25.3914', '23.7371']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1785.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1785.0 = 0.994398
+      scaled_flow:  ['0.00', '440.31', '685.67', '859.09', '1071.76', '1094.64', '1098.82', '1111.98', '1269.29', '1484.38', '1665.61', '1805.28', '1848.29']
+      scaled_head:  ['85.05', '76.38', '74.91', '73.21', '68.75', '68.11', '67.99', '67.65', '62.96', '54.03', '45.99', '37.81', '27.60']
+      scaled_power: ['10.9953', '15.0383', '18.6795', '21.1002', '23.2740', '23.4278', '23.4889', '23.6005', '24.5670', '25.2652', '25.1979', '24.9671', '23.3404']
+    [FINAL] plotted_flow:  [0.00 → 1848.29]
+    [FINAL] plotted_head:  [85.05 → 27.60]
+    [FINAL] plotted_power: [10.9953 → 23.3404]
+    [FINAL] plotted_eff:   [0.00 → 55.19]
+
+  ── [LOAD+SCALE] 99272230080010A1P ──
+    trim=8.9600, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '615.43', '790.55', '976.59', '1004.35', '1028.76', '1218.10', '1405.69', '1496.65', '1644.95', '1769.65']
+    head ('tdh_bowl'): 11 pts
+      values: ['425.85', '368.99', '362.25', '345.61', '342.52', '339.17', '312.75', '275.28', '253.86', '216.23', '182.59']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['58.5221', '88.1626', '100.0318', '110.5385', '111.8462', '112.9296', '119.9334', '123.4318', '123.8896', '123.3318', '122.2121']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '64.93', '72.17', '76.97', '77.54', '77.89', '80.07', '79.03', '77.31', '72.70', '66.65']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['425.85', '368.99', '362.25', '345.61', '342.52', '339.17', '312.75', '275.28', '253.86', '216.23', '182.59']
+      head AFTER:  ['85.17', '73.80', '72.45', '69.12', '68.50', '67.83', '62.55', '55.06', '50.77', '43.25', '36.52']
+      power BEFORE: ['58.5221', '88.1626', '100.0318', '110.5385', '111.8462', '112.9296', '119.9334', '123.4318', '123.8896', '123.3318', '122.2121']
+      power AFTER:  ['11.7044', '17.6325', '20.0064', '22.1077', '22.3692', '22.5859', '23.9867', '24.6864', '24.7779', '24.6664', '24.4424']
+    [AFFINITY]
+      test_diameter:     8.9600
+      baseline_diameter: 8.9600
+      dia_ratio:         8.9600/8.9600 = 1.000000
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '620.68', '797.29', '984.91', '1012.91', '1037.53', '1228.48', '1417.67', '1509.41', '1658.97', '1784.74']
+      scaled_head:  ['86.63', '75.06', '73.69', '70.30', '69.68', '69.00', '63.62', '56.00', '51.64', '43.99', '37.14']
+      scaled_power: ['12.0062', '18.0872', '20.5223', '22.6778', '22.9461', '23.1683', '24.6052', '25.3229', '25.4169', '25.3024', '25.0727']
+    [FINAL] plotted_flow:  [0.00 → 1784.74]
+    [FINAL] plotted_head:  [86.63 → 37.14]
+    [FINAL] plotted_power: [12.0062 → 25.0727]
+    [FINAL] plotted_eff:   [0.00 → 66.65]
+
+  ── Group: PX baseline=8.6425, 25 tests, affinity=True ──
+
+  ── [LOAD+SCALE] 99272133080010A1P ──
+    trim=8.6200, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 10
+    flow: 10 pts
+      values: ['3.92', '587.94', '799.94', '956.41', '1002.00', '1026.55', '1196.36', '1514.73', '1590.83', '1702.00']
+    head ('tdh_bowl'): 10 pts
+      values: ['306.18', '275.95', '267.53', '254.19', '249.93', '246.87', '227.78', '178.22', '164.23', '142.11']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 10 pts
+      values: ['39.9331', '63.7420', '72.4748', '77.8354', '79.1653', '79.7696', '83.1292', '84.9913', '84.3914', '82.6266']
+    efficiency ('eff_bowl_motor'): 10 pts
+      values: ['0.76', '64.16', '74.44', '78.74', '79.74', '80.09', '82.64', '80.07', '78.04', '73.79']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['306.18', '275.95', '267.53', '254.19', '249.93', '246.87', '227.78', '178.22', '164.23', '142.11']
+      head AFTER:  ['76.54', '68.99', '66.88', '63.55', '62.48', '61.72', '56.94', '44.55', '41.06', '35.53']
+      power BEFORE: ['39.9331', '63.7420', '72.4748', '77.8354', '79.1653', '79.7696', '83.1292', '84.9913', '84.3914', '82.6266']
+      power AFTER:  ['9.9833', '15.9355', '18.1187', '19.4588', '19.7913', '19.9424', '20.7823', '21.2478', '21.0979', '20.6567']
+    [AFFINITY]
+      test_diameter:     8.6200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6200 = 1.002610
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['3.96', '594.50', '808.86', '967.08', '1013.18', '1038.00', '1209.71', '1531.63', '1608.58', '1720.99']
+      scaled_head:  ['78.26', '70.53', '68.38', '64.97', '63.88', '63.10', '58.22', '45.55', '41.98', '36.32']
+      scaled_power: ['10.3211', '16.4748', '18.7318', '20.1173', '20.4611', '20.6173', '21.4856', '21.9669', '21.8118', '21.3557']
+    [FINAL] plotted_flow:  [3.96 → 1720.99]
+    [FINAL] plotted_head:  [78.26 → 36.32]
+    [FINAL] plotted_power: [10.3211 → 21.3557]
+    [FINAL] plotted_eff:   [0.76 → 73.79]
+
+  ── [LOAD+SCALE] 99272126520010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['16.63', '581.90', '793.53', '949.48', '954.13', '1007.91', '1043.02', '1211.55', '1507.97', '1607.71', '1698.60', '1803.17']
+    head ('tdh_bowl'): 12 pts
+      values: ['311.82', '273.24', '264.81', '252.58', '252.33', '247.29', '243.81', '223.37', '177.51', '157.83', '139.40', '115.29']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['40.4668', '61.7743', '71.4787', '77.0899', '77.1338', '78.6836', '79.6316', '82.8858', '84.3158', '83.0702', '81.8404', '79.5202']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['3.23', '64.88', '74.11', '78.42', '78.68', '79.85', '80.50', '82.31', '80.03', '77.00', '72.93', '65.90']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['311.82', '273.24', '264.81', '252.58', '252.33', '247.29', '243.81', '223.37', '177.51', '157.83', '139.40', '115.29']
+      head AFTER:  ['77.95', '68.31', '66.20', '63.14', '63.08', '61.82', '60.95', '55.84', '44.38', '39.46', '34.85', '28.82']
+      power BEFORE: ['40.4668', '61.7743', '71.4787', '77.0899', '77.1338', '78.6836', '79.6316', '82.8858', '84.3158', '83.0702', '81.8404', '79.5202']
+      power AFTER:  ['10.1167', '15.4436', '17.8697', '19.2725', '19.2835', '19.6709', '19.9079', '20.7214', '21.0790', '20.7675', '20.4601', '19.8801']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['16.73', '585.67', '798.67', '955.64', '960.31', '1014.44', '1049.79', '1219.40', '1517.74', '1618.14', '1709.62', '1814.87']
+      scaled_head:  ['78.97', '69.20', '67.06', '63.97', '63.90', '62.63', '61.75', '56.57', '44.96', '39.97', '35.30', '29.20']
+      scaled_power: ['10.3148', '15.7460', '18.2196', '19.6498', '19.6610', '20.0561', '20.2977', '21.1272', '21.4917', '21.1742', '20.8607', '20.2693']
+    [FINAL] plotted_flow:  [16.73 → 1814.87]
+    [FINAL] plotted_head:  [78.97 → 29.20]
+    [FINAL] plotted_power: [10.3148 → 20.2693]
+    [FINAL] plotted_eff:   [3.23 → 65.90]
+
+  ── [LOAD+SCALE] 99272068280030A2P ──
+    trim=8.5800, stages=1, rpm=1190.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.20', '329.30', '494.76', '643.39', '776.18', '802.03', '822.63', '934.18', '1025.61', '1155.17', '1213.85']
+    head ('tdh_bowl'): 11 pts
+      values: ['36.25', '31.39', '30.12', '27.95', '25.49', '24.98', '24.66', '22.00', '19.31', '14.83', '12.58']
+    power ('power_bowl_dyno'): 11 pts
+      values: ['3.1818', '4.4204', '5.3250', '6.0146', '6.5002', '6.5660', '6.6140', '6.8310', '6.9203', '6.8509', '6.7474']
+    efficiency ('eff_bowl_dyno'): 11 pts
+      values: ['0.06', '59.03', '70.66', '75.47', '76.85', '77.04', '77.44', '75.95', '72.25', '63.11', '57.12']
+    [STAGE NORM] single-stage — no division
+    [AFFINITY]
+      test_diameter:     8.5800
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.5800 = 1.007284
+      test_rpm:          1190.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1190.0 = 1.491597
+      scaled_flow:  ['0.30', '494.77', '743.36', '966.66', '1166.19', '1205.02', '1235.98', '1403.57', '1540.94', '1735.60', '1823.77']
+      scaled_head:  ['81.82', '70.85', '68.00', '63.09', '57.55', '56.40', '55.68', '49.66', '43.59', '33.47', '28.39']
+      scaled_power: ['10.7914', '14.9923', '18.0604', '20.3994', '22.0464', '22.2697', '22.4322', '23.1682', '23.4713', '23.2360', '22.8847']
+      ⚠ Speed change is 49.2% (>10%). Affinity law accuracy may be reduced.
+    [FINAL] plotted_flow:  [0.30 → 1823.77]
+    [FINAL] plotted_head:  [81.82 → 28.39]
+    [FINAL] plotted_power: [10.7914 → 22.8847]
+    [FINAL] plotted_eff:   [0.06 → 57.12]
+
+  ── [LOAD+SCALE] 99272149470010A1P ──
+    trim=8.5800, stages=6, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 10
+    flow: 10 pts
+      values: ['4.52', '629.48', '800.12', '973.63', '1002.70', '1024.69', '1205.14', '1515.26', '1592.43', '1643.14']
+    head ('tdh_bowl'): 10 pts
+      values: ['449.82', '406.40', '393.54', '371.14', '366.57', '362.67', '330.69', '260.53', '239.71', '224.49']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 10 pts
+      values: ['58.3638', '96.7328', '106.2046', '113.9292', '114.7885', '115.5909', '119.6680', '122.2573', '121.1300', '119.8295']
+    efficiency ('eff_bowl_motor'): 10 pts
+      values: ['0.88', '66.67', '74.74', '79.96', '80.72', '81.05', '83.95', '81.40', '79.44', '77.60']
+    [STAGE NORM] 6-stage → dividing head & power by 6
+      head BEFORE: ['449.82', '406.40', '393.54', '371.14', '366.57', '362.67', '330.69', '260.53', '239.71', '224.49']
+      head AFTER:  ['74.97', '67.73', '65.59', '61.86', '61.09', '60.45', '55.11', '43.42', '39.95', '37.42']
+      power BEFORE: ['58.3638', '96.7328', '106.2046', '113.9292', '114.7885', '115.5909', '119.6680', '122.2573', '121.1300', '119.8295']
+      power AFTER:  ['9.7273', '16.1221', '17.7008', '18.9882', '19.1314', '19.2651', '19.9447', '20.3762', '20.1883', '19.9716']
+    [AFFINITY]
+      test_diameter:     8.5800
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.5800 = 1.007284
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['4.60', '639.47', '812.82', '989.08', '1018.61', '1040.95', '1224.26', '1539.31', '1617.70', '1669.22']
+      scaled_head:  ['77.37', '69.90', '67.69', '63.84', '63.05', '62.38', '56.88', '44.81', '41.23', '38.61']
+      scaled_power: ['10.1978', '16.9019', '18.5569', '19.9066', '20.0567', '20.1969', '20.9093', '21.3618', '21.1648', '20.9376']
+    [FINAL] plotted_flow:  [4.60 → 1669.22]
+    [FINAL] plotted_head:  [77.37 → 38.61]
+    [FINAL] plotted_power: [10.1978 → 20.9376]
+    [FINAL] plotted_eff:   [0.88 → 77.60]
+
+  ── [LOAD+SCALE] 99272160560010A1P ──
+    trim=8.6900, stages=1, rpm=1785.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 9
+    flow: 9 pts
+      values: ['0.00', '478.15', '940.07', '1146.39', '1188.02', '1221.43', '1420.06', '1594.33', '1719.98']
+    head ('tdh_bowl'): 9 pts
+      values: ['81.57', '73.26', '67.51', '63.12', '61.72', '60.61', '53.05', '45.05', '38.22']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 9 pts
+      values: ['11.7174', '16.2184', '21.9906', '23.7953', '24.1388', '24.3682', '25.1595', '25.3140', '24.8878']
+    efficiency ('eff_bowl_motor'): 9 pts
+      values: ['0.00', '54.52', '72.85', '76.76', '76.69', '76.69', '75.59', '71.63', '66.69']
+    [STAGE NORM] single-stage — no division
+    [AFFINITY]
+      test_diameter:     8.6900
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6900 = 0.994534
+      test_rpm:          1785.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1785.0 = 0.994398
+      scaled_flow:  ['0.00', '472.87', '929.69', '1133.74', '1174.90', '1207.95', '1404.39', '1576.73', '1700.99']
+      scaled_head:  ['79.78', '71.65', '66.03', '61.73', '60.37', '59.28', '51.89', '44.06', '37.38']
+      scaled_power: ['11.3336', '15.6872', '21.2704', '23.0160', '23.3483', '23.5701', '24.3356', '24.4850', '24.0728']
+    [FINAL] plotted_flow:  [0.00 → 1700.99]
+    [FINAL] plotted_head:  [79.78 → 37.38]
+    [FINAL] plotted_power: [11.3336 → 24.0728]
+    [FINAL] plotted_eff:   [0.00 → 66.69]
+
+  ── [LOAD+SCALE] 99272162430010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '596.62', '808.13', '968.60', '998.96', '1035.50', '1187.98', '1372.35', '1503.87', '1625.23', '1711.26']
+    head ('tdh_bowl'): 11 pts
+      values: ['298.92', '274.13', '267.30', '255.46', '252.62', '249.36', '234.02', '208.21', '187.38', '166.19', '148.02']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['36.4124', '62.2584', '71.7570', '77.3343', '78.1850', '79.0921', '82.3536', '84.8360', '85.4884', '84.7743', '82.9958']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '66.22', '75.89', '80.66', '81.37', '82.30', '85.10', '84.91', '83.10', '80.32', '76.94']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['298.92', '274.13', '267.30', '255.46', '252.62', '249.36', '234.02', '208.21', '187.38', '166.19', '148.02']
+      head AFTER:  ['74.73', '68.53', '66.82', '63.86', '63.15', '62.34', '58.51', '52.05', '46.85', '41.55', '37.00']
+      power BEFORE: ['36.4124', '62.2584', '71.7570', '77.3343', '78.1850', '79.0921', '82.3536', '84.8360', '85.4884', '84.7743', '82.9958']
+      power AFTER:  ['9.1031', '15.5646', '17.9393', '19.3336', '19.5463', '19.7730', '20.5884', '21.2090', '21.3721', '21.1936', '20.7490']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '600.49', '813.37', '974.88', '1005.44', '1042.21', '1195.69', '1381.25', '1513.62', '1635.77', '1722.36']
+      scaled_head:  ['75.70', '69.42', '67.69', '64.70', '63.98', '63.15', '59.27', '52.73', '47.45', '42.09', '37.49']
+      scaled_power: ['9.2813', '15.8694', '18.2905', '19.7121', '19.9290', '20.1602', '20.9915', '21.6243', '21.7906', '21.6086', '21.1552']
+    [FINAL] plotted_flow:  [0.00 → 1722.36]
+    [FINAL] plotted_head:  [75.70 → 37.49]
+    [FINAL] plotted_power: [9.2813 → 21.1552]
+    [FINAL] plotted_eff:   [0.00 → 76.94]
+
+  ── [LOAD+SCALE] 99272178420010A1P ──
+    trim=8.6000, stages=6, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '599.66', '798.40', '978.98', '1005.23', '1037.37', '1198.17', '1404.36', '1497.22', '1610.24', '1673.82']
+    head ('tdh_bowl'): 11 pts
+      values: ['459.05', '407.33', '394.57', '373.15', '369.40', '363.98', '333.29', '290.97', '268.17', '234.12', '213.34']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['58.6339', '93.1034', '105.6171', '114.1860', '115.2648', '116.4653', '120.3547', '122.8394', '122.7126', '120.7199', '119.0654']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '66.14', '75.19', '80.65', '81.21', '81.73', '83.64', '83.86', '82.48', '78.72', '75.61']
+    [STAGE NORM] 6-stage → dividing head & power by 6
+      head BEFORE: ['459.05', '407.33', '394.57', '373.15', '369.40', '363.98', '333.29', '290.97', '268.17', '234.12', '213.34']
+      head AFTER:  ['76.51', '67.89', '65.76', '62.19', '61.57', '60.66', '55.55', '48.49', '44.70', '39.02', '35.56']
+      power BEFORE: ['58.6339', '93.1034', '105.6171', '114.1860', '115.2648', '116.4653', '120.3547', '122.8394', '122.7126', '120.7199', '119.0654']
+      power AFTER:  ['9.7723', '15.5172', '17.6028', '19.0310', '19.2108', '19.4109', '20.0591', '20.4732', '20.4521', '20.1200', '19.8442']
+    [AFFINITY]
+      test_diameter:     8.6000
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6000 = 1.004942
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '607.76', '809.18', '992.20', '1018.81', '1051.38', '1214.35', '1423.33', '1517.44', '1631.99', '1696.43']
+      scaled_head:  ['78.59', '69.73', '67.55', '63.88', '63.24', '62.31', '57.06', '49.81', '45.91', '40.08', '36.52']
+      scaled_power: ['10.1737', '16.1545', '18.3258', '19.8126', '19.9998', '20.2081', '20.8829', '21.3141', '21.2921', '20.9463', '20.6592']
+    [FINAL] plotted_flow:  [0.00 → 1696.43]
+    [FINAL] plotted_head:  [78.59 → 36.52]
+    [FINAL] plotted_power: [10.1737 → 20.6592]
+    [FINAL] plotted_eff:   [0.00 → 75.61]
+
+  ── [LOAD+SCALE] 99272196350010A1P ──
+    trim=8.6200, stages=2, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '590.04', '810.07', '967.78', '986.93', '1011.39', '1165.17', '1418.38', '1521.78', '1582.54', '1723.66']
+    head ('tdh_bowl'): 11 pts
+      values: ['154.79', '136.58', '131.85', '124.98', '124.45', '122.84', '114.45', '95.43', '85.86', '79.11', '63.71']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['18.9185', '30.4653', '35.7177', '38.5300', '38.7587', '39.1487', '40.9547', '42.0718', '41.9767', '41.5160', '40.4806']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '66.68', '75.38', '79.14', '79.88', '80.00', '82.08', '81.10', '78.46', '76.02', '68.38']
+    [STAGE NORM] 2-stage → dividing head & power by 2
+      head BEFORE: ['154.79', '136.58', '131.85', '124.98', '124.45', '122.84', '114.45', '95.43', '85.86', '79.11', '63.71']
+      head AFTER:  ['77.40', '68.29', '65.93', '62.49', '62.22', '61.42', '57.22', '47.71', '42.93', '39.56', '31.85']
+      power BEFORE: ['18.9185', '30.4653', '35.7177', '38.5300', '38.7587', '39.1487', '40.9547', '42.0718', '41.9767', '41.5160', '40.4806']
+      power AFTER:  ['9.4592', '15.2326', '17.8589', '19.2650', '19.3793', '19.5744', '20.4773', '21.0359', '20.9884', '20.7580', '20.2403']
+    [AFFINITY]
+      test_diameter:     8.6200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6200 = 1.002610
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '596.63', '819.11', '978.58', '997.94', '1022.67', '1178.17', '1434.20', '1538.75', '1600.20', '1742.89']
+      scaled_head:  ['79.13', '69.82', '67.40', '63.89', '63.62', '62.80', '58.51', '48.78', '43.89', '40.44', '32.57']
+      scaled_power: ['9.7793', '15.7481', '18.4632', '19.9169', '20.0352', '20.2368', '21.1703', '21.7478', '21.6986', '21.4605', '20.9252']
+    [FINAL] plotted_flow:  [0.00 → 1742.89]
+    [FINAL] plotted_head:  [79.13 → 32.57]
+    [FINAL] plotted_power: [9.7793 → 20.9252]
+    [FINAL] plotted_eff:   [0.00 → 68.38]
+
+  ── [LOAD+SCALE] 99272201090010A1P ──
+    trim=8.7000, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '604.47', '824.73', '952.11', '978.22', '995.90', '1045.11', '1208.12', '1514.36', '1610.92', '1713.08', '1803.31']
+    head ('tdh_bowl'): 12 pts
+      values: ['397.33', '345.02', '333.34', '319.93', '316.80', '314.80', '308.76', '284.32', '222.56', '198.09', '170.63', '144.94']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['52.9433', '80.0779', '92.5543', '98.4168', '99.3266', '99.9797', '101.6581', '105.6709', '107.1190', '105.8292', '104.2406', '101.8056']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '65.65', '74.88', '78.02', '78.65', '79.05', '80.02', '81.94', '79.32', '76.01', '70.69', '64.72']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['397.33', '345.02', '333.34', '319.93', '316.80', '314.80', '308.76', '284.32', '222.56', '198.09', '170.63', '144.94']
+      head AFTER:  ['79.47', '69.00', '66.67', '63.99', '63.36', '62.96', '61.75', '56.86', '44.51', '39.62', '34.13', '28.99']
+      power BEFORE: ['52.9433', '80.0779', '92.5543', '98.4168', '99.3266', '99.9797', '101.6581', '105.6709', '107.1190', '105.8292', '104.2406', '101.8056']
+      power AFTER:  ['10.5887', '16.0156', '18.5109', '19.6834', '19.8653', '19.9959', '20.3316', '21.1342', '21.4238', '21.1658', '20.8481', '20.3611']
+    [AFFINITY]
+      test_diameter:     8.7000
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7000 = 0.993391
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '605.59', '826.26', '953.88', '980.03', '997.75', '1047.06', '1210.37', '1517.17', '1613.91', '1716.26', '1806.66']
+      scaled_head:  ['79.76', '69.26', '66.92', '64.22', '63.60', '63.19', '61.98', '57.07', '44.68', '39.76', '34.25', '29.10']
+      scaled_power: ['10.6478', '16.1050', '18.6142', '19.7932', '19.9762', '20.1076', '20.4451', '21.2522', '21.5434', '21.2840', '20.9645', '20.4748']
+    [FINAL] plotted_flow:  [0.00 → 1806.66]
+    [FINAL] plotted_head:  [79.76 → 29.10]
+    [FINAL] plotted_power: [10.6478 → 20.4748]
+    [FINAL] plotted_eff:   [0.00 → 64.72]
+
+  ── [LOAD+SCALE] 99272165710010A1P ──
+    trim=8.7600, stages=10, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '608.61', '791.76', '974.47', '997.83', '1036.79', '1228.71', '1395.48', '1503.58', '1615.19', '1718.67']
+    head ('tdh_bowl'): 11 pts
+      values: ['785.23', '692.68', '674.40', '639.00', '633.20', '622.95', '565.34', '501.53', '451.57', '398.29', '341.89']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['103.7480', '166.1014', '188.6529', '205.6805', '207.6690', '210.5618', '219.7747', '222.5564', '221.0647', '218.3417', '213.9146']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '63.98', '71.35', '76.32', '76.70', '77.32', '79.68', '79.27', '77.43', '74.27', '69.25']
+    [STAGE NORM] 10-stage → dividing head & power by 10
+      head BEFORE: ['785.23', '692.68', '674.40', '639.00', '633.20', '622.95', '565.34', '501.53', '451.57', '398.29', '341.89']
+      head AFTER:  ['78.52', '69.27', '67.44', '63.90', '63.32', '62.29', '56.53', '50.15', '45.16', '39.83', '34.19']
+      power BEFORE: ['103.7480', '166.1014', '188.6529', '205.6805', '207.6690', '210.5618', '219.7747', '222.5564', '221.0647', '218.3417', '213.9146']
+      power AFTER:  ['10.3748', '16.6101', '18.8653', '20.5681', '20.7669', '21.0562', '21.9775', '22.2556', '22.1065', '21.8342', '21.3915']
+    [AFFINITY]
+      test_diameter:     8.7600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7600 = 0.986587
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '605.56', '787.80', '969.60', '992.83', '1031.60', '1222.56', '1388.49', '1496.06', '1607.10', '1710.07']
+      scaled_head:  ['77.74', '68.58', '66.77', '63.26', '62.69', '61.67', '55.97', '49.65', '44.71', '39.43', '33.85']
+      scaled_power: ['10.2198', '16.3620', '18.5835', '20.2608', '20.4567', '20.7416', '21.6491', '21.9232', '21.7762', '21.5080', '21.0719']
+    [FINAL] plotted_flow:  [0.00 → 1710.07]
+    [FINAL] plotted_head:  [77.74 → 33.85]
+    [FINAL] plotted_power: [10.2198 → 21.0719]
+    [FINAL] plotted_eff:   [0.00 → 69.25]
+
+  ── [LOAD+SCALE] 99272212100010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '401.10', '609.01', '799.50', '975.43', '1000.31', '1020.69', '1174.58', '1351.53', '1515.76', '1621.12', '1713.18']
+    head ('tdh_bowl'): 12 pts
+      values: ['307.90', '279.10', '271.03', '262.56', '247.11', '244.95', '242.92', '224.12', '194.32', '163.98', '142.20', '119.99']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['38.8116', '52.7536', '62.4929', '70.6872', '76.6078', '77.2771', '77.8759', '80.8282', '82.4160', '81.9232', '80.4317', '78.6479']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '53.49', '66.58', '74.86', '79.32', '79.93', '80.26', '82.10', '80.33', '76.49', '72.25', '65.89']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['307.90', '279.10', '271.03', '262.56', '247.11', '244.95', '242.92', '224.12', '194.32', '163.98', '142.20', '119.99']
+      head AFTER:  ['76.98', '69.77', '67.76', '65.64', '61.78', '61.24', '60.73', '56.03', '48.58', '41.00', '35.55', '30.00']
+      power BEFORE: ['38.8116', '52.7536', '62.4929', '70.6872', '76.6078', '77.2771', '77.8759', '80.8282', '82.4160', '81.9232', '80.4317', '78.6479']
+      power AFTER:  ['9.7029', '13.1884', '15.6232', '17.6718', '19.1520', '19.3193', '19.4690', '20.2070', '20.6040', '20.4808', '20.1079', '19.6620']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '403.70', '612.96', '804.69', '981.76', '1006.80', '1027.31', '1182.20', '1360.30', '1525.59', '1631.64', '1724.29']
+      scaled_head:  ['77.98', '70.68', '68.64', '66.49', '62.58', '62.03', '61.52', '56.76', '49.21', '41.53', '36.01', '30.39']
+      scaled_power: ['9.8929', '13.4466', '15.9291', '18.0178', '19.5270', '19.6976', '19.8502', '20.6027', '21.0074', '20.8818', '20.5017', '20.0470']
+    [FINAL] plotted_flow:  [0.00 → 1724.29]
+    [FINAL] plotted_head:  [77.98 → 30.39]
+    [FINAL] plotted_power: [9.8929 → 20.0470]
+    [FINAL] plotted_eff:   [0.00 → 65.89]
+
+  ── [LOAD+SCALE] 99272198520010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 13
+    flow: 13 pts
+      values: ['0.00', '375.94', '595.53', '798.21', '968.77', '1004.36', '1044.02', '1190.61', '1375.83', '1504.30', '1618.10', '1695.03', '1765.47']
+    head ('tdh_bowl'): 13 pts
+      values: ['313.52', '282.79', '271.64', '262.23', '246.21', '242.06', '237.06', '216.36', '183.39', '158.93', '135.12', '114.53', '95.96']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 13 pts
+      values: ['40.3005', '52.7535', '62.7576', '71.9592', '77.9902', '79.0004', '80.0284', '82.8688', '84.2163', '84.2259', '82.7448', '81.4388', '79.9448']
+    efficiency ('eff_bowl_motor'): 13 pts
+      values: ['0.00', '50.80', '64.98', '73.33', '77.10', '77.58', '77.96', '78.36', '75.52', '71.56', '66.61', '60.09', '53.42']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['313.52', '282.79', '271.64', '262.23', '246.21', '242.06', '237.06', '216.36', '183.39', '158.93', '135.12', '114.53', '95.96']
+      head AFTER:  ['78.38', '70.70', '67.91', '65.56', '61.55', '60.51', '59.27', '54.09', '45.85', '39.73', '33.78', '28.63', '23.99']
+      power BEFORE: ['40.3005', '52.7535', '62.7576', '71.9592', '77.9902', '79.0004', '80.0284', '82.8688', '84.2163', '84.2259', '82.7448', '81.4388', '79.9448']
+      power AFTER:  ['10.0751', '13.1884', '15.6894', '17.9898', '19.4976', '19.7501', '20.0071', '20.7172', '21.0541', '21.0565', '20.6862', '20.3597', '19.9862']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '378.38', '599.40', '803.38', '975.05', '1010.88', '1050.79', '1198.33', '1384.75', '1514.06', '1628.60', '1706.02', '1776.92']
+      scaled_head:  ['79.40', '71.62', '68.79', '66.41', '62.35', '61.30', '60.04', '54.79', '46.44', '40.25', '34.22', '29.00', '24.30']
+      scaled_power: ['10.2724', '13.4466', '15.9966', '18.3421', '19.8793', '20.1368', '20.3988', '21.1228', '21.4663', '21.4688', '21.0912', '20.7584', '20.3775']
+    [FINAL] plotted_flow:  [0.00 → 1776.92]
+    [FINAL] plotted_head:  [79.40 → 24.30]
+    [FINAL] plotted_power: [10.2724 → 20.3775]
+    [FINAL] plotted_eff:   [0.00 → 53.42]
+
+  ── [LOAD+SCALE] 99272205420010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '581.77', '797.41', '968.28', '1006.60', '1044.04', '1193.91', '1358.80', '1499.72', '1511.78', '1598.74', '1693.39']
+    head ('tdh_bowl'): 12 pts
+      values: ['299.71', '268.28', '260.12', '246.38', '242.63', '238.83', '221.50', '197.95', '173.05', '170.63', '153.17', '131.24']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['37.7558', '61.1355', '70.7652', '76.6598', '77.7628', '78.6760', '81.6924', '83.2608', '82.8657', '82.7909', '81.7151', '79.9674']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '64.36', '73.89', '78.45', '79.17', '79.89', '81.61', '81.44', '78.95', '78.54', '75.54', '70.06']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['299.71', '268.28', '260.12', '246.38', '242.63', '238.83', '221.50', '197.95', '173.05', '170.63', '153.17', '131.24']
+      head AFTER:  ['74.93', '67.07', '65.03', '61.60', '60.66', '59.71', '55.38', '49.49', '43.26', '42.66', '38.29', '32.81']
+      power BEFORE: ['37.7558', '61.1355', '70.7652', '76.6598', '77.7628', '78.6760', '81.6924', '83.2608', '82.8657', '82.7909', '81.7151', '79.9674']
+      power AFTER:  ['9.4389', '15.2839', '17.6913', '19.1649', '19.4407', '19.6690', '20.4231', '20.8152', '20.7164', '20.6977', '20.4288', '19.9919']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '585.55', '802.58', '974.56', '1013.13', '1050.81', '1201.65', '1367.61', '1509.44', '1521.58', '1609.10', '1704.37']
+      scaled_head:  ['75.90', '67.94', '65.88', '62.40', '61.45', '60.48', '56.10', '50.13', '43.82', '43.21', '38.79', '33.24']
+      scaled_power: ['9.6238', '15.5832', '18.0377', '19.5402', '19.8214', '20.0541', '20.8230', '21.2228', '21.1221', '21.1030', '20.8288', '20.3833']
+    [FINAL] plotted_flow:  [0.00 → 1704.37]
+    [FINAL] plotted_head:  [75.90 → 33.24]
+    [FINAL] plotted_power: [9.6238 → 20.3833]
+    [FINAL] plotted_eff:   [0.00 → 70.06]
+
+  ── [LOAD+SCALE] 99272213380010A1P ──
+    trim=8.7600, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '592.11', '797.34', '975.96', '999.53', '1029.75', '1208.65', '1339.50', '1503.30', '1601.49', '1753.55']
+    head ('tdh_bowl'): 11 pts
+      values: ['398.69', '347.96', '337.76', '319.09', '316.42', '312.46', '285.62', '262.94', '224.24', '201.75', '157.07']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['53.6111', '80.6820', '92.7833', '101.0917', '101.9199', '102.9278', '107.6718', '109.4138', '109.3722', '108.4164', '105.4555']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '64.37', '73.17', '77.66', '78.23', '78.80', '80.82', '81.15', '77.70', '75.13', '65.84']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['398.69', '347.96', '337.76', '319.09', '316.42', '312.46', '285.62', '262.94', '224.24', '201.75', '157.07']
+      head AFTER:  ['79.74', '69.59', '67.55', '63.82', '63.28', '62.49', '57.12', '52.59', '44.85', '40.35', '31.41']
+      power BEFORE: ['53.6111', '80.6820', '92.7833', '101.0917', '101.9199', '102.9278', '107.6718', '109.4138', '109.3722', '108.4164', '105.4555']
+      power AFTER:  ['10.7222', '16.1364', '18.5567', '20.2183', '20.3840', '20.5856', '21.5344', '21.8828', '21.8744', '21.6833', '21.0911']
+    [AFFINITY]
+      test_diameter:     8.7600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7600 = 0.986587
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '589.14', '793.35', '971.08', '994.53', '1024.60', '1202.60', '1332.79', '1495.77', '1593.47', '1744.77']
+      scaled_head:  ['78.94', '68.90', '66.88', '63.18', '62.65', '61.87', '56.55', '52.06', '44.40', '39.95', '31.10']
+      scaled_power: ['10.5620', '15.8953', '18.2794', '19.9163', '20.0795', '20.2780', '21.2126', '21.5558', '21.5476', '21.3593', '20.7760']
+    [FINAL] plotted_flow:  [0.00 → 1744.77]
+    [FINAL] plotted_head:  [78.94 → 31.10]
+    [FINAL] plotted_power: [10.5620 → 20.7760]
+    [FINAL] plotted_eff:   [0.00 → 65.84]
+
+  ── [LOAD+SCALE] 99272213380010B1P ──
+    trim=8.7600, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '607.74', '805.13', '966.69', '1006.75', '1029.62', '1255.15', '1343.24', '1495.09', '1578.21', '1738.25']
+    head ('tdh_bowl'): 11 pts
+      values: ['396.61', '348.80', '338.38', '320.89', '316.12', '312.89', '276.96', '260.94', '222.65', '202.37', '154.07']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['52.0597', '81.8500', '93.5486', '101.2410', '102.7557', '103.5128', '109.3950', '110.4046', '110.5642', '109.7217', '107.3598']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.29', '73.41', '77.24', '78.08', '78.46', '80.11', '80.03', '75.90', '73.38', '62.89']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['396.61', '348.80', '338.38', '320.89', '316.12', '312.89', '276.96', '260.94', '222.65', '202.37', '154.07']
+      head AFTER:  ['79.32', '69.76', '67.68', '64.18', '63.22', '62.58', '55.39', '52.19', '44.53', '40.47', '30.81']
+      power BEFORE: ['52.0597', '81.8500', '93.5486', '101.2410', '102.7557', '103.5128', '109.3950', '110.4046', '110.5642', '109.7217', '107.3598']
+      power AFTER:  ['10.4119', '16.3700', '18.7097', '20.2482', '20.5511', '20.7026', '21.8790', '22.0809', '22.1128', '21.9443', '21.4720']
+    [AFFINITY]
+      test_diameter:     8.7600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7600 = 0.986587
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '604.70', '801.10', '961.85', '1001.71', '1024.47', '1248.87', '1336.51', '1487.61', '1570.31', '1729.55']
+      scaled_head:  ['78.53', '69.06', '67.00', '63.54', '62.59', '61.95', '54.84', '51.67', '44.08', '40.07', '30.51']
+      scaled_power: ['10.2564', '16.1254', '18.4302', '19.9457', '20.2441', '20.3933', '21.5521', '21.7510', '21.7825', '21.6165', '21.1512']
+    [FINAL] plotted_flow:  [0.00 → 1729.55]
+    [FINAL] plotted_head:  [78.53 → 30.51]
+    [FINAL] plotted_power: [10.2564 → 21.1512]
+    [FINAL] plotted_eff:   [0.00 → 62.89]
+
+  ── [LOAD+SCALE] 99272214760040A1P ──
+    trim=8.7600, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '589.78', '810.50', '967.93', '1004.08', '1038.56', '1202.48', '1387.88', '1497.38', '1587.39', '1712.90', '1799.15']
+    head ('tdh_bowl'): 12 pts
+      values: ['397.45', '348.21', '337.86', '321.64', '317.20', '313.08', '288.61', '253.82', '229.40', '205.51', '174.50', '148.54']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['52.2603', '80.2121', '93.2708', '100.6274', '102.1298', '103.4286', '107.5063', '110.1254', '110.0021', '108.9498', '107.2834', '105.5348']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '64.54', '74.01', '77.99', '78.62', '79.25', '81.38', '80.64', '78.72', '75.48', '70.24', '63.84']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['397.45', '348.21', '337.86', '321.64', '317.20', '313.08', '288.61', '253.82', '229.40', '205.51', '174.50', '148.54']
+      head AFTER:  ['79.49', '69.64', '67.57', '64.33', '63.44', '62.62', '57.72', '50.76', '45.88', '41.10', '34.90', '29.71']
+      power BEFORE: ['52.2603', '80.2121', '93.2708', '100.6274', '102.1298', '103.4286', '107.5063', '110.1254', '110.0021', '108.9498', '107.2834', '105.5348']
+      power AFTER:  ['10.4521', '16.0424', '18.6542', '20.1255', '20.4260', '20.6857', '21.5013', '22.0251', '22.0004', '21.7900', '21.4567', '21.1070']
+    [AFFINITY]
+      test_diameter:     8.7600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7600 = 0.986587
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '586.83', '806.45', '963.09', '999.05', '1033.37', '1196.46', '1380.93', '1489.89', '1579.45', '1704.33', '1790.15']
+      scaled_head:  ['78.70', '68.95', '66.90', '63.69', '62.81', '61.99', '57.15', '50.26', '45.42', '40.69', '34.55', '29.41']
+      scaled_power: ['10.2959', '15.8028', '18.3755', '19.8248', '20.1208', '20.3767', '21.1800', '21.6960', '21.6718', '21.4644', '21.1361', '20.7916']
+    [FINAL] plotted_flow:  [0.00 → 1790.15]
+    [FINAL] plotted_head:  [78.70 → 29.41]
+    [FINAL] plotted_power: [10.2959 → 20.7916]
+    [FINAL] plotted_eff:   [0.00 → 63.84]
+
+  ── [LOAD+SCALE] 99272230180010A1P ──
+    trim=8.7200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '592.30', '812.09', '963.49', '1007.38', '1037.82', '1214.90', '1347.63', '1514.47', '1627.05', '1737.64']
+    head ('tdh_bowl'): 11 pts
+      values: ['387.02', '344.86', '333.94', '317.72', '312.25', '308.17', '280.87', '254.70', '217.53', '188.02', '157.96']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['49.1348', '79.0557', '91.7320', '98.5688', '100.1050', '101.1227', '105.4659', '107.0081', '106.7240', '105.0032', '102.8312']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.13', '74.52', '78.29', '79.21', '79.73', '81.56', '80.86', '77.82', '73.45', '67.29']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['387.02', '344.86', '333.94', '317.72', '312.25', '308.17', '280.87', '254.70', '217.53', '188.02', '157.96']
+      head AFTER:  ['77.40', '68.97', '66.79', '63.54', '62.45', '61.63', '56.17', '50.94', '43.51', '37.60', '31.59']
+      power BEFORE: ['49.1348', '79.0557', '91.7320', '98.5688', '100.1050', '101.1227', '105.4659', '107.0081', '106.7240', '105.0032', '102.8312']
+      power AFTER:  ['9.8270', '15.8111', '18.3464', '19.7138', '20.0210', '20.2245', '21.0932', '21.4016', '21.3448', '21.0006', '20.5662']
+    [AFFINITY]
+      test_diameter:     8.7200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7200 = 0.991112
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '592.04', '811.73', '963.06', '1006.93', '1037.36', '1214.37', '1347.04', '1513.81', '1626.33', '1736.87']
+      scaled_head:  ['77.34', '68.91', '66.73', '63.49', '62.39', '61.58', '56.12', '50.90', '43.47', '37.57', '31.56']
+      scaled_power: ['9.8140', '15.7902', '18.3222', '19.6877', '19.9946', '20.1978', '21.0653', '21.3733', '21.3166', '20.9729', '20.5391']
+    [FINAL] plotted_flow:  [0.00 → 1736.87]
+    [FINAL] plotted_head:  [77.34 → 31.56]
+    [FINAL] plotted_power: [9.8140 → 20.5391]
+    [FINAL] plotted_eff:   [0.00 → 67.29]
+
+  ── [LOAD+SCALE] 99272230330010A1P ──
+    trim=8.7200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '586.49', '817.24', '956.75', '998.81', '1038.62', '1218.18', '1337.71', '1503.61', '1628.25', '1736.17']
+    head ('tdh_bowl'): 11 pts
+      values: ['387.78', '344.66', '333.34', '318.27', '313.67', '308.25', '280.70', '259.87', '220.37', '189.59', '157.64']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['50.0117', '78.8815', '92.1829', '98.5069', '100.1085', '101.4355', '105.6779', '107.1798', '106.7550', '104.9718', '102.5535']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '64.60', '74.50', '77.93', '78.89', '79.56', '81.57', '81.76', '78.24', '74.14', '67.27']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['387.78', '344.66', '333.34', '318.27', '313.67', '308.25', '280.70', '259.87', '220.37', '189.59', '157.64']
+      head AFTER:  ['77.56', '68.93', '66.67', '63.65', '62.73', '61.65', '56.14', '51.97', '44.07', '37.92', '31.53']
+      power BEFORE: ['50.0117', '78.8815', '92.1829', '98.5069', '100.1085', '101.4355', '105.6779', '107.1798', '106.7550', '104.9718', '102.5535']
+      power AFTER:  ['10.0023', '15.7763', '18.4366', '19.7014', '20.0217', '20.2871', '21.1356', '21.4360', '21.3510', '20.9944', '20.5107']
+    [AFFINITY]
+      test_diameter:     8.7200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7200 = 0.991112
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '586.23', '816.88', '956.33', '998.37', '1038.16', '1217.64', '1337.12', '1502.95', '1627.54', '1735.40']
+      scaled_head:  ['77.49', '68.87', '66.61', '63.60', '62.68', '61.60', '56.09', '51.93', '44.03', '37.89', '31.50']
+      scaled_power: ['9.9891', '15.7555', '18.4122', '19.6753', '19.9953', '20.2603', '21.1077', '21.4076', '21.3228', '20.9666', '20.4836']
+    [FINAL] plotted_flow:  [0.00 → 1735.40]
+    [FINAL] plotted_head:  [77.49 → 31.50]
+    [FINAL] plotted_power: [9.9891 → 20.4836]
+    [FINAL] plotted_eff:   [0.00 → 67.27]
+
+  ── [LOAD+SCALE] 99272230190010A1P ──
+    trim=8.7200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '593.96', '814.47', '967.68', '995.48', '1036.74', '1212.52', '1333.82', '1516.20', '1625.47', '1724.75']
+    head ('tdh_bowl'): 11 pts
+      values: ['386.64', '343.89', '332.45', '315.89', '312.08', '306.66', '280.10', '258.20', '213.37', '185.80', '155.83']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['48.7334', '78.9460', '91.8600', '98.5346', '99.5711', '100.9776', '105.2202', '106.5601', '105.8969', '104.2757', '102.2499']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.22', '74.31', '78.21', '78.65', '79.37', '81.37', '81.47', '77.01', '73.01', '66.26']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['386.64', '343.89', '332.45', '315.89', '312.08', '306.66', '280.10', '258.20', '213.37', '185.80', '155.83']
+      head AFTER:  ['77.33', '68.78', '66.49', '63.18', '62.42', '61.33', '56.02', '51.64', '42.67', '37.16', '31.17']
+      power BEFORE: ['48.7334', '78.9460', '91.8600', '98.5346', '99.5711', '100.9776', '105.2202', '106.5601', '105.8969', '104.2757', '102.2499']
+      power AFTER:  ['9.7467', '15.7892', '18.3720', '19.7069', '19.9142', '20.1955', '21.0440', '21.3120', '21.1794', '20.8551', '20.4500']
+    [AFFINITY]
+      test_diameter:     8.7200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7200 = 0.991112
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '593.70', '814.11', '967.26', '995.04', '1036.29', '1211.99', '1333.24', '1515.53', '1624.75', '1723.99']
+      scaled_head:  ['77.26', '68.72', '66.43', '63.12', '62.36', '61.28', '55.97', '51.59', '42.64', '37.13', '31.14']
+      scaled_power: ['9.7338', '15.7683', '18.3477', '19.6809', '19.8879', '20.1688', '21.0162', '21.2839', '21.1514', '20.8276', '20.4230']
+    [FINAL] plotted_flow:  [0.00 → 1723.99]
+    [FINAL] plotted_head:  [77.26 → 31.14]
+    [FINAL] plotted_power: [9.7338 → 20.4230]
+    [FINAL] plotted_eff:   [0.00 → 66.26]
+
+  ── [LOAD+SCALE] 99272232080010A1P ──
+    trim=8.7200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '593.49', '814.41', '981.74', '1002.79', '1018.18', '1193.25', '1381.83', '1502.54', '1598.56', '1692.07']
+    head ('tdh_bowl'): 11 pts
+      values: ['385.09', '344.72', '333.75', '315.74', '312.73', '310.82', '283.91', '245.46', '219.85', '194.71', '169.65']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['48.6613', '79.2260', '91.8752', '99.1941', '100.0736', '100.4388', '104.9737', '106.7585', '106.3311', '105.1715', '103.6665']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.10', '74.58', '78.78', '79.00', '79.43', '81.35', '80.09', '78.31', '74.60', '69.81']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['385.09', '344.72', '333.75', '315.74', '312.73', '310.82', '283.91', '245.46', '219.85', '194.71', '169.65']
+      head AFTER:  ['77.02', '68.94', '66.75', '63.15', '62.55', '62.16', '56.78', '49.09', '43.97', '38.94', '33.93']
+      power BEFORE: ['48.6613', '79.2260', '91.8752', '99.1941', '100.0736', '100.4388', '104.9737', '106.7585', '106.3311', '105.1715', '103.6665']
+      power AFTER:  ['9.7323', '15.8452', '18.3750', '19.8388', '20.0147', '20.0878', '20.9947', '21.3517', '21.2662', '21.0343', '20.7333']
+    [AFFINITY]
+      test_diameter:     8.7200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7200 = 0.991112
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '593.23', '814.05', '981.31', '1002.35', '1017.73', '1192.73', '1381.22', '1501.88', '1597.86', '1691.33']
+      scaled_head:  ['76.95', '68.88', '66.69', '63.09', '62.49', '62.11', '56.73', '49.05', '43.93', '38.91', '33.90']
+      scaled_power: ['9.7194', '15.8243', '18.3508', '19.8126', '19.9883', '20.0612', '20.9670', '21.3235', '21.2381', '21.0065', '20.7059']
+    [FINAL] plotted_flow:  [0.00 → 1691.33]
+    [FINAL] plotted_head:  [76.95 → 33.90]
+    [FINAL] plotted_power: [9.7194 → 20.7059]
+    [FINAL] plotted_eff:   [0.00 → 69.81]
+
+  ── [LOAD+SCALE] 99272232080010A1P ──
+    trim=8.7200, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '593.49', '814.41', '981.74', '1002.79', '1018.18', '1193.25', '1381.83', '1502.54', '1598.56', '1692.07']
+    head ('tdh_bowl'): 11 pts
+      values: ['385.09', '344.72', '333.75', '315.74', '312.73', '310.82', '283.91', '245.46', '219.85', '194.71', '169.65']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['48.6613', '79.2260', '91.8752', '99.1941', '100.0736', '100.4388', '104.9737', '106.7585', '106.3311', '105.1715', '103.6665']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.10', '74.58', '78.78', '79.00', '79.43', '81.35', '80.09', '78.31', '74.60', '69.81']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['385.09', '344.72', '333.75', '315.74', '312.73', '310.82', '283.91', '245.46', '219.85', '194.71', '169.65']
+      head AFTER:  ['77.02', '68.94', '66.75', '63.15', '62.55', '62.16', '56.78', '49.09', '43.97', '38.94', '33.93']
+      power BEFORE: ['48.6613', '79.2260', '91.8752', '99.1941', '100.0736', '100.4388', '104.9737', '106.7585', '106.3311', '105.1715', '103.6665']
+      power AFTER:  ['9.7323', '15.8452', '18.3750', '19.8388', '20.0147', '20.0878', '20.9947', '21.3517', '21.2662', '21.0343', '20.7333']
+    [AFFINITY]
+      test_diameter:     8.7200
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7200 = 0.991112
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '593.23', '814.05', '981.31', '1002.35', '1017.73', '1192.73', '1381.22', '1501.88', '1597.86', '1691.33']
+      scaled_head:  ['76.95', '68.88', '66.69', '63.09', '62.49', '62.11', '56.73', '49.05', '43.93', '38.91', '33.90']
+      scaled_power: ['9.7194', '15.8243', '18.3508', '19.8126', '19.9883', '20.0612', '20.9670', '21.3235', '21.2381', '21.0065', '20.7059']
+    [FINAL] plotted_flow:  [0.00 → 1691.33]
+    [FINAL] plotted_head:  [76.95 → 33.90]
+    [FINAL] plotted_power: [9.7194 → 20.7059]
+    [FINAL] plotted_eff:   [0.00 → 69.81]
+
+  ── [LOAD+SCALE] 99272224170010A1P ──
+    trim=8.7800, stages=3, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '605.89', '793.22', '969.51', '1001.96', '1025.81', '1203.58', '1357.72', '1495.59', '1611.26', '1707.97', '1780.56']
+    head ('tdh_bowl'): 12 pts
+      values: ['234.07', '208.52', '203.95', '194.20', '191.96', '190.45', '176.42', '160.14', '141.88', '125.59', '110.25', '95.87']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['30.5563', '50.0680', '57.0433', '62.3019', '62.8911', '63.3572', '66.9667', '68.8366', '69.2353', '68.6028', '67.4946', '66.2286']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '63.61', '71.49', '76.18', '77.10', '77.73', '79.93', '79.62', '77.26', '74.36', '70.33', '64.97']
+    [STAGE NORM] 3-stage → dividing head & power by 3
+      head BEFORE: ['234.07', '208.52', '203.95', '194.20', '191.96', '190.45', '176.42', '160.14', '141.88', '125.59', '110.25', '95.87']
+      head AFTER:  ['78.02', '69.51', '67.98', '64.73', '63.99', '63.48', '58.81', '53.38', '47.29', '41.86', '36.75', '31.96']
+      power BEFORE: ['30.5563', '50.0680', '57.0433', '62.3019', '62.8911', '63.3572', '66.9667', '68.8366', '69.2353', '68.6028', '67.4946', '66.2286']
+      power AFTER:  ['10.1854', '16.6893', '19.0144', '20.7673', '20.9637', '21.1191', '22.3222', '22.9455', '23.0784', '22.8676', '22.4982', '22.0762']
+    [AFFINITY]
+      test_diameter:     8.7800
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7800 = 0.984339
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '601.49', '787.45', '962.46', '994.67', '1018.35', '1194.83', '1347.85', '1484.72', '1599.54', '1695.55', '1767.62']
+      scaled_head:  ['76.89', '68.50', '67.00', '63.80', '63.06', '62.56', '57.96', '52.61', '46.61', '41.26', '36.22', '31.49']
+      scaled_power: ['9.9649', '16.3279', '18.6027', '20.3176', '20.5097', '20.6617', '21.8388', '22.4486', '22.5786', '22.3724', '22.0110', '21.5981']
+    [FINAL] plotted_flow:  [0.00 → 1767.62]
+    [FINAL] plotted_head:  [76.89 → 31.49]
+    [FINAL] plotted_power: [9.9649 → 21.5981]
+    [FINAL] plotted_eff:   [0.00 → 64.97]
+
+  ── [LOAD+SCALE] 99272254750010A1P ──
+    trim=8.6600, stages=4, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '390.10', '812.36', '958.14', '1005.51', '1045.06', '1161.72', '1498.49', '1500.49', '1622.44', '1750.79', '1835.69']
+    head ('tdh_bowl'): 12 pts
+      values: ['312.77', '280.10', '261.83', '249.48', '244.33', '240.47', '227.02', '171.08', '170.00', '145.57', '114.76', '91.75']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['41.0570', '52.9123', '71.7731', '76.5609', '78.0722', '79.0214', '81.1795', '82.4564', '82.4750', '80.9450', '78.6104', '76.0709']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '52.06', '74.71', '78.71', '79.33', '80.17', '81.90', '78.38', '77.97', '73.56', '64.43', '55.81']
+    [STAGE NORM] 4-stage → dividing head & power by 4
+      head BEFORE: ['312.77', '280.10', '261.83', '249.48', '244.33', '240.47', '227.02', '171.08', '170.00', '145.57', '114.76', '91.75']
+      head AFTER:  ['78.19', '70.02', '65.46', '62.37', '61.08', '60.12', '56.76', '42.77', '42.50', '36.39', '28.69', '22.94']
+      power BEFORE: ['41.0570', '52.9123', '71.7731', '76.5609', '78.0722', '79.0214', '81.1795', '82.4564', '82.4750', '80.9450', '78.6104', '76.0709']
+      power AFTER:  ['10.2643', '13.2281', '17.9433', '19.1402', '19.5180', '19.7553', '20.2949', '20.6141', '20.6188', '20.2362', '19.6526', '19.0177']
+    [AFFINITY]
+      test_diameter:     8.6600
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.6600 = 0.997979
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '392.63', '817.63', '964.35', '1012.03', '1051.83', '1169.26', '1508.21', '1510.22', '1632.96', '1762.14', '1847.59']
+      scaled_head:  ['79.21', '70.94', '66.31', '63.18', '61.88', '60.90', '57.49', '43.33', '43.05', '36.87', '29.06', '23.24']
+      scaled_power: ['10.4652', '13.4871', '18.2946', '19.5150', '19.9002', '20.1422', '20.6923', '21.0177', '21.0225', '20.6325', '20.0374', '19.3901']
+    [FINAL] plotted_flow:  [0.00 → 1847.59]
+    [FINAL] plotted_head:  [79.21 → 23.24]
+    [FINAL] plotted_power: [10.4652 → 19.3901]
+    [FINAL] plotted_eff:   [0.00 → 55.81]
+
+  ── [LOAD+SCALE] 99272244030010A1P ──
+    trim=8.7000, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '594.60', '788.47', '972.00', '1010.32', '1035.48', '1225.50', '1369.44', '1496.27', '1623.83', '1730.97']
+    head ('tdh_bowl'): 11 pts
+      values: ['384.01', '341.13', '331.21', '312.35', '307.21', '304.00', '274.13', '245.52', '216.27', '185.43', '153.06']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['47.7984', '78.3733', '89.2076', '97.0893', '98.4955', '99.1774', '103.4158', '104.2490', '103.9563', '101.9595', '99.3698']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.24', '73.80', '78.83', '79.44', '80.01', '81.89', '81.30', '78.47', '74.45', '67.21']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['384.01', '341.13', '331.21', '312.35', '307.21', '304.00', '274.13', '245.52', '216.27', '185.43', '153.06']
+      head AFTER:  ['76.80', '68.23', '66.24', '62.47', '61.44', '60.80', '54.83', '49.10', '43.25', '37.09', '30.61']
+      power BEFORE: ['47.7984', '78.3733', '89.2076', '97.0893', '98.4955', '99.1774', '103.4158', '104.2490', '103.9563', '101.9595', '99.3698']
+      power AFTER:  ['9.5597', '15.6747', '17.8415', '19.4179', '19.6991', '19.8355', '20.6832', '20.8498', '20.7913', '20.3919', '19.8740']
+    [AFFINITY]
+      test_diameter:     8.7000
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7000 = 0.993391
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '595.71', '789.93', '973.80', '1012.20', '1037.40', '1227.77', '1371.98', '1499.05', '1626.84', '1734.18']
+      scaled_head:  ['77.09', '68.48', '66.49', '62.70', '61.67', '61.03', '55.03', '49.29', '43.41', '37.22', '30.73']
+      scaled_power: ['9.6130', '15.7622', '17.9411', '19.5262', '19.8091', '19.9462', '20.7986', '20.9662', '20.9073', '20.5057', '19.9849']
+    [FINAL] plotted_flow:  [0.00 → 1734.18]
+    [FINAL] plotted_head:  [77.09 → 30.73]
+    [FINAL] plotted_power: [9.6130 → 19.9849]
+    [FINAL] plotted_eff:   [0.00 → 67.21]
+
+  ── [LOAD+SCALE] 99272253040010A1P ──
+    trim=8.7000, stages=5, rpm=1760.0, filing='Fig1. To 0.03125'
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 11
+    flow: 11 pts
+      values: ['0.00', '612.87', '793.58', '971.03', '999.98', '1028.90', '1210.48', '1383.71', '1512.41', '1591.32', '1679.64']
+    head ('tdh_bowl'): 11 pts
+      values: ['383.21', '342.36', '332.81', '313.81', '309.99', '306.20', '278.56', '244.47', '214.67', '195.14', '172.69']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 11 pts
+      values: ['49.3793', '80.8372', '90.9528', '98.4343', '99.2231', '100.2383', '104.8087', '105.9995', '106.0275', '104.7722', '102.9596']
+    efficiency ('eff_bowl_motor'): 11 pts
+      values: ['0.00', '65.43', '73.20', '78.04', '78.76', '79.23', '81.10', '80.45', '77.19', '74.71', '71.02']
+    [STAGE NORM] 5-stage → dividing head & power by 5
+      head BEFORE: ['383.21', '342.36', '332.81', '313.81', '309.99', '306.20', '278.56', '244.47', '214.67', '195.14', '172.69']
+      head AFTER:  ['76.64', '68.47', '66.56', '62.76', '62.00', '61.24', '55.71', '48.89', '42.93', '39.03', '34.54']
+      power BEFORE: ['49.3793', '80.8372', '90.9528', '98.4343', '99.2231', '100.2383', '104.8087', '105.9995', '106.0275', '104.7722', '102.9596']
+      power AFTER:  ['9.8759', '16.1674', '18.1906', '19.6869', '19.8446', '20.0477', '20.9617', '21.1999', '21.2055', '20.9544', '20.5919']
+    [AFFINITY]
+      test_diameter:     8.7000
+      baseline_diameter: 8.6425
+      dia_ratio:         8.6425/8.7000 = 0.993391
+      test_rpm:          1760.0
+      baseline_rpm:      1775.0
+      speed_ratio:       1775.0/1760.0 = 1.008523
+      scaled_flow:  ['0.00', '614.01', '795.05', '972.83', '1001.84', '1030.81', '1212.72', '1386.28', '1515.22', '1594.28', '1682.76']
+      scaled_head:  ['76.93', '68.73', '66.81', '62.99', '62.23', '61.47', '55.92', '49.08', '43.09', '39.17', '34.67']
+      scaled_power: ['9.9310', '16.2577', '18.2921', '19.7967', '19.9554', '20.1596', '21.0788', '21.3182', '21.3239', '21.0714', '20.7069']
+    [FINAL] plotted_flow:  [0.00 → 1682.76]
+    [FINAL] plotted_head:  [76.93 → 34.67]
+    [FINAL] plotted_power: [9.9310 → 20.7069]
+    [FINAL] plotted_eff:   [0.00 → 71.02]
+
+  ── Group: PX baseline=8.3250, 0 tests, affinity=False ──
+
+  ── Group: PX baseline=8.0075, 0 tests, affinity=False ──
+
+  ── Group: PX baseline=7.6900, 0 tests, affinity=False ──
+
+======================================================================
+  SUMMARY
+======================================================================
+  Total tests found:     34
+  Tests with data:       34
+  Groups:                5
+  Detail: 34 cached, 0 from Excel

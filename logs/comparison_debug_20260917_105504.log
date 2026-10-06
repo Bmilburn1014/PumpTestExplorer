@@ -1,0 +1,245 @@
+Comparison debug log — 2026-09-17T10:55:04.857551
+======================================================================
+
+Selected impeller part numbers: None
+======================================================================
+  COMPARISON RUN
+======================================================================
+  px_file:       C:\Users\107087\OneDrive - Grundfos\Desktop\3PVF11PSD.xlsx
+  date_start:    2026-01-17
+  date_end:      2026-09-17
+  tolerance:     3%
+  test_iteration:3
+  head_col:      tdh_bowl
+  power_col:     power_bowl_dyno
+
+======================================================================
+  PX CURVES
+======================================================================
+  Curve number: 3PVF11-3500
+  Rated speed:  3500.0
+  Trim count:   3
+    Trim dia=10.5  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=9.25  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+    Trim dia=7.25  attrs=['bep_efficiency', 'bep_flow', 'diameter', 'head', 'head_flow', 'npsh', 'npsh_flow', 'power', 'power_flow', 'shutoff_power']
+
+======================================================================
+  CLASSIFICATION
+======================================================================
+  pump_type:       inline
+  index_name:      ppu_test_log
+  trim_column:     material_2
+  bowl_diameter:   None
+  detail_path:     None
+  base_model_name: None
+  impeller_part:   None
+
+======================================================================
+  INDEX SEARCH
+======================================================================
+Mixed impellers filter skipped: pump is not vertical.
+Impeller part filter skipped: pump is not vertical.
+  Index file path: X:\US\Ind\Prod\InsideTest\First Test Folder\PPU Daily Hor Inl Std Test Log Rotation.xlsx
+  File exists: True
+  Index 'ppu_test_log': 43266 rows loaded
+  Columns: ['test_id', 'test_date', 'job_number', 'serial_number', 'pump_model', 'rated_flow', 'rated_head', 'rpm', 'driver_hp', 'rotation', 'service_factor', 'test_run', 'group', 'model_type', 'fire_pump', 'pass_fail', 'test_stand', 'flood_pump', 'material_1', 'material_2', 'cond_failure', 'proc_failure', 'corrective', 'test_type', '_source_index']
+  Model search regex: 3\.?0?PVF?11
+  Unique pump_model values: 461
+  Sample models: [' ', ' 5PVF11M', '#XXX##', '0', '03AEF09', '03AEF09G', '04AE12', '04AEF10']
+  After model filter: 450 rows (from 43266)
+  Sample test_date values: ['2015-02-03', '2015-02-03', '2015-03-03', '2015-04-09', '2015-05-26']
+  After date filter [2026-01-17 to 2026-09-17]: 13 rows (from 450)
+  After test iteration filter: 13 rows (from 13)
+  After mixed impellers filter: 13 rows (from 13)
+  After vertical impeller part filter: 13 rows (from 13)
+
+  Trim column: 'material_2'  found=True  is_vertical=False
+  Raw trim samples:
+    [0] type=str  value='8.07'
+    [1] type=str  value='7.79'
+    [2] type=str  value='7.68'
+    [3] type=str  value='8.93'
+    [4] type=str  value='8.76'
+
+----------------------------------------------------------------------
+  PER-ROW TRIM PARSING
+----------------------------------------------------------------------
+
+  test_id=99272279110010A1
+    raw trim: type=str  value='8.07'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.07
+    → trim_diameter=8.07, num_stages=1, filing=''
+    ✓ trim=8.0700, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272279150010A1
+    raw trim: type=str  value='7.79'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 7.79
+    → trim_diameter=7.79, num_stages=1, filing=''
+    ✓ trim=7.7900, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272279150010A2
+    raw trim: type=str  value='7.68'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 7.68
+    → trim_diameter=7.68, num_stages=1, filing=''
+    ✓ trim=7.6800, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272290120010A1
+    raw trim: type=str  value='8.93'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.93
+    → trim_diameter=8.93, num_stages=1, filing=''
+    ✓ trim=8.9300, stages=1, rpm=3560.0, model='3PVF11', filing=''
+
+  test_id=99272299800010A1
+    raw trim: type=str  value='8.76'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.76
+    → trim_diameter=8.76, num_stages=1, filing=''
+    ✓ trim=8.7600, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272306200010A1
+    raw trim: type=str  value='8.07'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.07
+    → trim_diameter=8.07, num_stages=1, filing=''
+    ✓ trim=8.0700, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272311830010A1
+    raw trim: type=str  value='8.31'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.31
+    → trim_diameter=8.31, num_stages=1, filing=''
+    ✓ trim=8.3100, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272328480010A1
+    raw trim: type=str  value='8.07'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.07
+    → trim_diameter=8.07, num_stages=1, filing=''
+    ✓ trim=8.0700, stages=1, rpm=3550.0, model='3PVF11', filing=''
+
+  test_id=99272331670010A2
+    raw trim: type=str  value='7.91'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 7.91
+    → trim_diameter=7.91, num_stages=1, filing=''
+    ✓ trim=7.9100, stages=1, rpm=3550.0, model='3PVF11', filing=''
+
+  test_id=99272331670010A3
+    raw trim: type=str  value='7.91'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 7.91
+    → trim_diameter=7.91, num_stages=1, filing=''
+    ✓ trim=7.9100, stages=1, rpm=3550.0, model='3PVF11', filing=''
+
+  test_id=99272335680010A1
+    raw trim: type=str  value='8.8'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 8.8
+    → trim_diameter=8.8, num_stages=1, filing=''
+    ✓ trim=8.8000, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  test_id=99272331670010A1
+    raw trim: type=str  value='7.91'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 7.91
+    → trim_diameter=7.91, num_stages=1, filing=''
+    ✓ trim=7.9100, stages=1, rpm=3550.0, model='3PVF11', filing=''
+
+  test_id=99272308570010A1
+    raw trim: type=str  value='9.08'
+      [extract_trim] is_vertical=False  has_@=False
+      [extract_trim] float → 9.08
+    → trim_diameter=9.08, num_stages=1, filing=''
+    ✓ trim=9.0800, stages=1, rpm=3500.0, model='3PVF11', filing=''
+
+  Total matches: 13, skipped (no trim): 0
+  Unique trims: ['7.6800', '7.7900', '7.9100', '8.0700', '8.3100', '8.7600', '8.8000', '8.9300', '9.0800']
+  Unique stages: [1]
+
+======================================================================
+  TRIM GROUPING
+======================================================================
+  PX baseline diameters: [10.5, 9.25, 7.25]
+  PX baseline speed:     3500.0
+  Tolerance:             3%
+  Input tests:           13
+
+  Speed filter: 13 kept, 0 excluded
+
+  [TRIM] 99272279110010A1: test_trim=8.0700 → nearest_px=7.2500  diff=11.31%  EXCLUDED
+  [TRIM] 99272279150010A1: test_trim=7.7900 → nearest_px=7.2500  diff=7.45%  EXCLUDED
+  [TRIM] 99272279150010A2: test_trim=7.6800 → nearest_px=7.2500  diff=5.93%  EXCLUDED
+  [TRIM] 99272290120010A1: test_trim=8.9300 → nearest_px=9.2500  diff=3.46%  EXCLUDED
+  [TRIM] 99272299800010A1: test_trim=8.7600 → nearest_px=9.2500  diff=5.30%  EXCLUDED
+  [TRIM] 99272306200010A1: test_trim=8.0700 → nearest_px=7.2500  diff=11.31%  EXCLUDED
+  [TRIM] 99272311830010A1: test_trim=8.3100 → nearest_px=9.2500  diff=10.16%  EXCLUDED
+  [TRIM] 99272328480010A1: test_trim=8.0700 → nearest_px=7.2500  diff=11.31%  EXCLUDED
+  [TRIM] 99272331670010A2: test_trim=7.9100 → nearest_px=7.2500  diff=9.10%  EXCLUDED
+  [TRIM] 99272331670010A3: test_trim=7.9100 → nearest_px=7.2500  diff=9.10%  EXCLUDED
+  [TRIM] 99272335680010A1: test_trim=8.8000 → nearest_px=9.2500  diff=4.86%  EXCLUDED
+  [TRIM] 99272331670010A1: test_trim=7.9100 → nearest_px=7.2500  diff=9.10%  EXCLUDED
+  [TRIM] 99272308570010A1: test_trim=9.0800 → nearest_px=9.2500  diff=1.84%  ASSIGNED
+
+   [GROUP EMPTY] PX=10.5000: no tests
+  ── [GROUP] PX baseline=9.2500 ──
+    tests:        1
+    trims:        ['9.0800']
+    avg_trim:     9.0800
+    dia_ratio:    9.2500 / 9.0800 = 1.018722
+    avg_rpm:      3500.0
+    speed_ratio:  3500.0 / 3500.0 = 1.000000
+   [GROUP EMPTY] PX=7.2500: no tests
+  [PATH] 99272308570010A1 → CACHED (skip resolve)
+  1 cached, 0 found, 0 to copy
+
+======================================================================
+  DETAIL DATA + SCALING
+======================================================================
+
+  ── Group: PX baseline=10.5000, 0 tests, affinity=False ──
+
+  ── Group: PX baseline=9.2500, 1 tests, affinity=True ──
+
+  ── [LOAD+SCALE] 99272308570010A1 ──
+    trim=9.0800, stages=1, rpm=3500.0, filing=''
+    columns: ['curve_no', 'flow', 'speed', 'power_in', 'power_bowl_motor', 'power_bowl_dyno', 'power_pump_motor', 'power_pump_dyno', 'tdh_bowl', 'tdh_pump', 'eff_bowl_motor', 'eff_bowl_dyno', 'eff_pump_motor', 'eff_pump_dyno', 'eff_overall', 'npsha']
+    rows: 12
+    flow: 12 pts
+      values: ['0.00', '151.54', '193.10', '225.09', '252.99', '294.08', '382.07', '448.68', '503.66', '575.38', '635.35', '680.28']
+    head ('tdh_bowl'): 12 pts
+      values: ['313.79', '316.19', '311.90', '308.34', '303.21', '293.56', '264.84', '239.25', '212.49', '165.97', '119.00', '74.92']
+    power ('power_bowl_dyno'): all zero/negative — trying fallback
+    power FALLBACK ('power_bowl_motor'): 12 pts
+      values: ['19.4114', '25.7448', '28.3859', '30.4093', '32.1485', '34.2427', '38.2911', '40.3762', '41.7771', '42.3916', '42.1371', '41.4566']
+    efficiency ('eff_bowl_motor'): 12 pts
+      values: ['0.00', '46.99', '53.56', '57.62', '60.24', '63.65', '66.71', '67.12', '64.67', '56.87', '45.30', '31.04']
+    [STAGE NORM] single-stage — no division
+    [AFFINITY]
+      test_diameter:     9.0800
+      baseline_diameter: 9.2500
+      dia_ratio:         9.2500/9.0800 = 1.018722
+      test_rpm:          3500.0
+      baseline_rpm:      3500.0
+      speed_ratio:       3500.0/3500.0 = 1.000000
+      HORIZONTAL slip factor: raw_d_ratio=1.018722  eff_d_ratio=1.2×1.0187−0.2=1.022467
+      scaled_flow:  ['0.00', '154.94', '197.43', '230.15', '258.67', '300.69', '390.65', '458.76', '514.98', '588.30', '649.62', '695.57']
+      scaled_head:  ['328.05', '330.56', '326.07', '322.35', '316.99', '306.90', '276.87', '250.12', '222.14', '173.51', '124.41', '78.32']
+      scaled_power: ['20.7493', '27.5193', '30.3424', '32.5053', '34.3644', '36.6029', '40.9304', '43.1592', '44.6566', '45.3135', '45.0414', '44.3141']
+    [FINAL] plotted_flow:  [0.00 → 695.57]
+    [FINAL] plotted_head:  [328.05 → 78.32]
+    [FINAL] plotted_power: [20.7493 → 44.3141]
+    [FINAL] plotted_eff:   [0.00 → 31.04]
+
+  ── Group: PX baseline=7.2500, 0 tests, affinity=False ──
+
+======================================================================
+  SUMMARY
+======================================================================
+  Total tests found:     13
+  Tests with data:       1
+  Groups:                3
+  Detail: 1 cached, 0 from Excel
