@@ -551,6 +551,7 @@ def open_logs_folder(n_clicks):
     Output("trim-group-panels", "children", allow_duplicate=True),
     Output("virtual-group-panels", "children", allow_duplicate=True),
     Input("session-status", "children"),
+    State("chart-tabs", "value"),
     State("comparison-results", "data"),
     State("px-data", "data"),
     State("fit-settings", "data"),
@@ -561,35 +562,37 @@ def open_logs_folder(n_clicks):
     prevent_initial_call=True,
 )
 def rebuild_panels_after_session_load(
-        session_msg, comp_data, px_data,
+        session_msg, chart_type, comp_data, px_data,
         fit_settings, shape_settings,
         group_vis, test_vis, added_trims):
+    import html
     """Rebuild trim group cards when a session is loaded."""
-    from dash import html
-    chart_type = ["head", "power"]
-    # Only trigger on successful load
-    if not session_msg or "Session loaded" not in str(session_msg):
+    if not session_msg or "session loaded" not in str(session_msg).lower():
         return no_update, no_update
-
     if not comp_data or "groups" not in comp_data:
         return no_update, no_update
+    
+    chart = chart_type if chart_type in ("head", "power") else "head"
+    chart_fit = (fit_settings or {}).get(chart, {})
+    chart_shape = (shape_settings or {}).get(chart, {})
+
+    # Only trigger on successful load
 
     from layout.main_layout import (build_trim_group_card,
                                      build_virtual_trim_card,
                                      VIRTUAL_INDEX_OFFSET)
 
     # -- Rebuild real group panels ------------------------------------
-    panels = []
-    for i, grp in enumerate(comp_data.get("groups", [])):
-        for chart in chart_type:
-            panels.append(build_trim_group_card(
-                i, grp,
-                chart_type=chart or {},
-                fit_settings=fit_settings or {},
-                shape_settings=shape_settings or {},
+    panels = [
+        build_trim_group_card(
+                i, grp, chart,
+                fit_settings=chart_fit,
+                shape_settings=chart_shape,
                 group_visibility=group_vis or {},
                 test_visibility=test_vis or {},
-            ))
+            )
+            for i, grp in enumerate(comp_data.get("groups", []))
+    ]
     if not panels:
         panels = [html.P("No matching tests found.",
                          className="empty-message")]

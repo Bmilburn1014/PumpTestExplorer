@@ -219,6 +219,8 @@ def set_active_shape_state(tab, shape_settings, fit_settings, test_visibility, g
     Input({"type": "shape-smoothing","index": ALL,"chart": ALL,},"value",),
     Input({"type": "knot-flow","index": ALL,"chart": ALL,},"value",),
     Input({"type": "knot-nudge","index": ALL,"chart": ALL,},"value",),
+    Input({"type": "knot-flow","index": ALL,"chart": ALL,},"id",),
+    Input({"type": "knot-nudge","index": ALL,"chart": ALL,},"id",),
 
     State("shape-settings", "data"),
     prevent_intial_call=True,
@@ -228,6 +230,7 @@ def collect_shape_settings(
     carryout_on_vals, carryout_pct_vals,
     spline_on_vals, smoothing_vals,
     knot_flow_vals, knot_nudge_vals,
+    knot_flow_ids, knot_nudge_ids,
     store
 ):
     if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
@@ -259,10 +262,13 @@ def collect_shape_settings(
         ss["smoothing"] = float(new_value or 0.3)
     elif control in ("knot-flow", "knot-nudge"):
         print(f"Shape settings update: {control} for chart {chart}, group {group_key}, value: {new_value}", flush=True)
-        # ss["knots"] = built_knots_for_group(
-        #     chart, group_key,
-            
-        # )
+        ss["knots"] = build_knots_for_group(
+            chart, group_key,
+            knot_flow_ids,
+            knot_flow_vals,
+            knot_nudge_ids,
+            knot_nudge_vals,
+            )
 
     return store
 
