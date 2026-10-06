@@ -30,11 +30,11 @@ def build_layout():
             dcc.Store(id="px-data", data=None),
             dcc.Store(id="comparison-results", data=None),
             dcc.Store(id="group-config", data={}),
-            dcc.Store(id="fit-settings", storage_type = "session", data={}),
-            dcc.Store(id="test-visibility", data={}, storage_type="session"),
+            dcc.Store(id="fit-settings", storage_type = "session", data={"head":{}, "power":{}, "active": "head"}),
+            dcc.Store(id="test-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="shape-settings", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="added-trims", data=[]),
-            dcc.Store(id="group-visibility", data={}, storage_type="session"),
+            dcc.Store(id="group-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
 
             # -- Export helpers ------------------------------------
             dcc.Interval(id="cache-refresh-interval",
@@ -482,8 +482,8 @@ def build_trim_group_card(idx, grp, chart_type, fit_settings=None,
     # Resolve initial group-vis from saved settings
     gv = group_visibility or {}
     grp_checked = gv.get(str(idx), True)
-    fs = (fit_settings or {}).get(chart_type, {}).get(str(idx), {})
-    ss = (shape_settings or {}).get(chart_type, {}).get(str(idx), {})
+    fs = (fit_settings or {}).get(str(idx), {})
+    ss = (shape_settings or {}).get(str(idx), {})
 
 
     children = [
@@ -545,8 +545,7 @@ def build_virtual_trim_card(vi, v_info, tests, chart_type=None, fit_settings=Non
 
     gv = group_visibility or {}
     grp_checked = gv.get(str(idx), True)
-    chart_fit_settings = (fit_settings or {}).get(str(chart_type), {})
-    fs = chart_fit_settings.get(str(idx), {})
+    fs = (fit_settings or {}).get(str(idx), {})
     ss = (shape_settings or {}).get(str(idx), {})
 
     children = [

@@ -139,78 +139,70 @@ def collect_group_visibility(vis_values, vis_ids):
     Input({"type": "fit-offset","index": ALL,"chart": ALL,},"value",),
     Input({"type": "bep-range","index": ALL,"chart": ALL,},"value",),
 
-    State({"type": "fit-poly","index": ALL,"chart": ALL,},"id",),
-    State({"type": "fit-offset","index": ALL,"chart": ALL,},"id",),
-    State({"type": "bep-range","index": ALL,"chart": ALL,},"id",),
+    State("fit-settings", "data"),
+    prevent_intital_call=True,
 )
 def collect_fit_settings(
-    poly_values,
-    offset_values,
-    range_values,
-    poly_ids,
-    offset_ids,
-    range_ids,
+    poly_values, offset_values,
+    range_values, store
 ):
-    triggered_id = ctx.triggered_id
 
-    if not isinstance(triggered_id, dict):
+    if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
+    triggered = ctx.triggered_id
+    control = triggered["type"]
+    group_key = str(triggered["index"]).split("-")[0]
+    chart = str(triggered.get("chart", store.get("active", "head")))
+    new_value = ctx.triggered[0]["value"]
 
-    control_type = triggered_id.get("type")
-    chart_key = str(triggered_id.get("chart"))
-    group_key = str(triggered_id.get("index"))
+    store = store or {"head": {}, "power": {}, "active": "head"}
+    store.setdefault(chart, {})
+    store[chart].setdefault(group_key, {})
 
-    def find_value(component_ids, values):
-        for component_id, value in zip(
-            component_ids or [],
-            values or [],
-        ):
-            same_chart = (
-                str(component_id.get("chart")) == chart_key
-            )
-            same_group = (
-                str(component_id.get("index")) == group_key
-            )
+    fs = store[chart][group_key]
 
-            if same_chart and same_group:
-                return value
+    if control == "fit-poly":
+        fs["poly_order"] = int(new_value or 3)
+    elif control == "fit-offset":
+        fs["offset_pct"] = float(new_value or 0)
+    elif control == "bep-range":
+        if isinstance(new_value, (list, tuple)) and len(new_value) == 2:
+            fs["bep_range_pct"] = [float(new_value[0] or 0), float(new_value[1] or 100)]
+        else:
+            fs["bep_range_pct"] = [0, 100]
+            
+    return store
 
-        return None
-
-    patch = Patch()
-
-    if control_type == "fit-poly":
-        value = find_value(poly_ids, poly_values)
-
-        if value is None:
-            raise PreventUpdate
-
-        patch[chart_key][group_key]["poly_order"] = int(value)
-
-    elif control_type == "fit-offset":
-        value = find_value(offset_ids, offset_values)
-
-        if value is None:
-            value = 0
-
-        patch[chart_key][group_key]["offset_pct"] = float(value)
-
-    elif control_type == "bep-range":
-        value = find_value(range_ids, range_values)
-
-        if not value or len(value) != 2:
-            raise PreventUpdate
-
-        patch[chart_key][group_key]["bep_range_pct"] = [
-            float(value[0]),
-            float(value[1]),
-        ]
-
-    else:
+#======================================================================
+# Sync Active with Chart Tab
+#======================================================================
+@callback(
+        Output("shape-settings", "data", allow_duplicate=True),
+        Output("fit-settings", "data", allow_duplicate=True),
+        Output("test-visibility", "data", allow_duplicate=True),
+        Output("group-visibility", "data", allow_duplicate=True),
+        Input("chart-tabs", "value"),
+        State("shape-settings", "data"),
+        State("fit-settings", "data"),
+        State("test-visibility", "data"),
+        State("group-visibility", "data"),
+        prevent_initial_call=True,
+)
+def set_active_shape_state(tab, shape_settings, fit_settings, test_visibility, group_visibility):
+    if tab not in ("head", "power"):
         raise PreventUpdate
+    ss = shape_settings or {"head": {}, "power": {}, "active": "head"}
+    ss["active"] = tab
 
-    return patch
+    fs = fit_settings or {"head": {}, "power": {}, "active": "head"}
+    fs["active"] = tab
 
+    tv = test_visibility or {"head": {}, "power": {}, "active": "head"}
+    tv["active"] = tab
+
+    gv = group_visibility or {"head": {}, "power": {}, "active": "head"}
+    gv["active"] = tab
+    return ss, fs, tv, gv
 
 # =====================================================================
 # COLLECT SHAPE SETTINGS
@@ -229,29 +221,50 @@ def collect_fit_settings(
     Input({"type": "knot-nudge","index": ALL,"chart": ALL,},"value",),
 
     State("shape-settings", "data"),
+    prevent_intial_call=True,
 )
 def collect_shape_settings(
-    droop_on_vals,
-    droop_pct_vals,
-    carryout_on_vals,
-    carryout_pct_vals,
-    spline_on_vals,
-    smoothing_vals,
-    knot_flow_vals,
-    knot_nudge_vals,
-    shape_settings
+    droop_on_vals, droop_pct_vals,
+    carryout_on_vals, carryout_pct_vals,
+    spline_on_vals, smoothing_vals,
+    knot_flow_vals, knot_nudge_vals,
+    store
 ):
-    if not ctx.triggered_id:
+    if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
-    
+    print("collect_shape_settings fired by:", ctx.triggered_id, flush=True)
     triggered = ctx.triggered_id
-    key = triggered["index"]
+    control = triggered["type"]
+    group_key = str(triggered["index"]).split("-")[0]
+    chart = str(triggered.get("chart", store.get("active", "head")))
     new_value = ctx.triggered[0]["value"]
 
-    active = shape_settings["active"]
-    shape_settings[active][key] = new_value
+    store = store or {"head": {}, "power": {}, "active": "head"}
+    store.setdefault(chart, {})
+    store[chart].setdefault(group_key, {})
 
-    return shape_settings
+    ss = store[chart][group_key]
+
+    if control == "shape-droop-on":
+        ss["droop_enabled"] = "on" in (new_value or [])
+    elif control == "shape-droop-pct":
+        ss["droop_pct"] = float(new_value or 0)
+    elif control == "shape-carryout-on":
+        ss["carryout_enabled"] = "on" in (new_value or [])
+    elif control == "shape-carryout-pct":
+        ss["carryout_pct"] = float(new_value or 0)
+    elif control == "shape-spline-on":
+        ss["spline_on"] = "on" in (new_value or [])
+    elif control == "shape-smoothing":
+        ss["smoothing"] = float(new_value or 0.3)
+    elif control in ("knot-flow", "knot-nudge"):
+        print(f"Shape settings update: {control} for chart {chart}, group {group_key}, value: {new_value}", flush=True)
+        # ss["knots"] = built_knots_for_group(
+        #     chart, group_key,
+            
+        # )
+
+    return store
 
 
 # =====================================================================
@@ -1936,10 +1949,10 @@ def _compute_outlier_tests(groups, px_data, band_pct):
     Input("comparison-results", "data"),
     Input("chart-tabs", "value"),
     State("px-data", "data"),
-    Input("fit-settings", "data"),
-    Input("shape-settings", "data"),
-    Input("group-visibility", "data"),
-    Input("test-visibility", "data"),
+    State("fit-settings", "data"),
+    State("shape-settings", "data"),
+    State("group-visibility", "data"),
+    State("test-visibility", "data"),
     prevent_initial_call=True,
 )
 def populate_virtual_panels(added_trims, comp_data, chart_type, px_data,
@@ -1989,10 +2002,10 @@ def populate_virtual_panels(added_trims, comp_data, chart_type, px_data,
     Input("chart-tabs", "value"),
 
     State("px-data", "data"),
-    Input("fit-settings", "data"),
-    Input("shape-settings", "data"),
-    Input("group-visibility", "data"),
-    Input("test-visibility", "data"),
+    State("fit-settings", "data"),
+    State("shape-settings", "data"),
+    State("group-visibility", "data"),
+    State("test-visibility", "data"),
     prevent_initial_call=True,
 )
 def populate_trim_panels(comp_data, chart_type, px_data,
