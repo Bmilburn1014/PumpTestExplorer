@@ -33,6 +33,7 @@ def build_layout():
             dcc.Store(id="fit-settings", storage_type = "session", data={"head":{}, "power":{}, "active": "head"}),
             dcc.Store(id="test-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="shape-settings", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
+            dcc.Store(id="knot-drag-store", data=None),
             dcc.Store(id="added-trims", data=[]),
             dcc.Store(id="group-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
 
@@ -733,14 +734,20 @@ def _build_shape_section(idx, chart_type, ss=None):
                          className="shape-section-title"),
                 dcc.Checklist(
                     id={"type": "shape-spline-on", "index": idx, "chart": chart_type},
-                    options=[{"label": " Use spline instead of polynomial",
+                    options=[{"label": " Generate draggable spline",
                               "value": "on"}],
                     value=init_spline_on, className="fit-check",
+                ),
+                html.Div(
+                    "Builds a spline with 25 points on the chart. "
+                    "Drag a point up, down, left, or right. "
+                    "The slider sets how tightly the curve follows the points.",
+                    className="hint-text",
                 ),
                 html.Div(className="slider-row compact-slider",
                          children=[
                     html.Div(className="row space-between", children=[
-                        html.Label("Smoothing:", className="fit-label"),
+                        html.Label("Point fit:", className="fit-label"),
                         html.Span(
                             id={"type": "shape-smooth-readout",
                                 "index": idx},
@@ -749,19 +756,18 @@ def _build_shape_section(idx, chart_type, ss=None):
                     dcc.Slider(
                         id={"type": "shape-smoothing", "index": idx, "chart": chart_type},
                         min=0, max=1, step=0.05, value=init_smooth,
-                        marks={0: "Tight", 0.5: "Med", 1: "Smooth"},
+                        marks={0: "Tight", 0.5: "Med", 1: "Loose"},
                         tooltip={"placement": "bottom",
                                  "always_visible": False},
                     ),
                 ]),
-            ]),
-            
-            # -- Knots ---------------------------------------------
-            html.Div(className="shape-section", children=[
-                html.Div("Knots", className="shape-section-title"),
-                html.Div("Place knots to control the curve locally.",
-                         className="hint-text"),
-                _build_knot_rows(idx,chart_type,ss),
+                html.Button(
+                    "Reset 25 points",
+                    id={"type": "spline-reset", "index": idx, "chart": chart_type},
+                    n_clicks=0,
+                    className="btn-auto-clean",
+                    title="Rebuild the 25 points from the visible test data",
+                ),
             ]),
         ]),
     ])

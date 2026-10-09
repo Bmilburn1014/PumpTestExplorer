@@ -217,20 +217,14 @@ def set_active_shape_state(tab, shape_settings, fit_settings, test_visibility, g
     Input({"type": "shape-carryout-pct","index": ALL,"chart": ALL,},"value",),
     Input({"type": "shape-spline-on","index": ALL,"chart": ALL,},"value",),
     Input({"type": "shape-smoothing","index": ALL,"chart": ALL,},"value",),
-    Input({"type": "knot-flow","index": ALL,"chart": ALL,},"value",),
-    Input({"type": "knot-nudge","index": ALL,"chart": ALL,},"value",),
-    Input({"type": "knot-flow","index": ALL,"chart": ALL,},"id",),
-    Input({"type": "knot-nudge","index": ALL,"chart": ALL,},"id",),
 
     State("shape-settings", "data"),
-    prevent_intial_call=True,
+    prevent_initial_call=True,
 )
 def collect_shape_settings(
     droop_on_vals, droop_pct_vals,
     carryout_on_vals, carryout_pct_vals,
     spline_on_vals, smoothing_vals,
-    knot_flow_vals, knot_nudge_vals,
-    knot_flow_ids, knot_nudge_ids,
     store
 ):
     if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
@@ -258,17 +252,13 @@ def collect_shape_settings(
         ss["carryout_pct"] = float(new_value or 0)
     elif control == "shape-spline-on":
         ss["spline_on"] = "on" in (new_value or [])
+        # Old sessions stored flow + nudge %. Those cannot be dragged,
+        # so drop them and let the generator place 25 absolute points.
+        if ss["spline_on"] and not _knots_are_absolute(ss.get("knots")):
+            ss["knots"] = []
+            ss["regenerate_knots"] = True
     elif control == "shape-smoothing":
         ss["smoothing"] = float(new_value or 0.3)
-    elif control in ("knot-flow", "knot-nudge"):
-        print(f"Shape settings update: {control} for chart {chart}, group {group_key}, value: {new_value}", flush=True)
-        ss["knots"] = build_knots_for_group(
-            chart, group_key,
-            knot_flow_ids,
-            knot_flow_vals,
-            knot_nudge_ids,
-            knot_nudge_vals,
-            )
 
     return store
 
@@ -359,6 +349,127 @@ def build_knots_for_group(
     knots.sort(key=lambda knot: knot["flow"])
 
     return knots
+
+# =====================================================================
+# DRAGGABLE SPLINE KNOTS
+# =====================================================================
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input("knot-drag-store", "data"),
+    State("shape-settings", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def apply_dragged_knots(payload, store, units):
+    """Write chart-dragged knot positions back into shape settings."""
+    if not isinstance(payload, dict):
+        raise PreventUpdate
+    chart = str(payload.get("chart") or "")
+    group_key = str(payload.get("group") or "")
+    raw = payload.get("knots") or []
+    if chart not in ("head", "power", "efficiency") or not group_key or not raw:
+        raise PreventUpdate
+
+    knots = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        try:
+            flow = float(item.get("flow"))
+            y = float(item.get("y"))
+        except (TypeError, ValueError):
+            continue
+        if not (np.isfinite(flow) and np.isfinite(y)):
+            continue
+        if chart == "head" and units == "psi":
+            y = y / FEET_TO_PSI
+        knots.append({"flow": flow, "y": y})
+    if len(knots) < 2:
+        raise PreventUpdate
+    knots.sort(key=lambda knot: knot["flow"])
+
+    store = store or {"head": {}, "power": {}, "active": chart}
+    store.setdefault(chart, {})
+    store[chart].setdefault(group_key, {})
+    store[chart][group_key]["knots"] = knots
+    store[chart][group_key]["spline_on"] = True
+    store[chart][group_key]["regenerate_knots"] = False
+    return store
+
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input({"type": "spline-reset", "index": ALL, "chart": ALL}, "n_clicks"),
+    State("shape-settings", "data"),
+    prevent_initial_call=True,
+)
+def reset_spline_knots(n_clicks, store):
+    """Drop the current points so they are rebuilt from visible tests."""
+    if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
+        raise PreventUpdate
+    if not any(n for n in (n_clicks or []) if n):
+        raise PreventUpdate
+    triggered = ctx.triggered_id
+    group_key = str(triggered.get("index"))
+    chart = str(triggered.get("chart") or "head")
+    store = store or {"head": {}, "power": {}, "active": chart}
+    store.setdefault(chart, {})
+    store[chart].setdefault(group_key, {})
+    store[chart][group_key]["knots"] = []
+    store[chart][group_key]["spline_on"] = True
+    store[chart][group_key]["regenerate_knots"] = True
+    return store
+
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input("shape-settings", "data"),
+    State("comparison-results", "data"),
+    State("px-data", "data"),
+    State("fit-settings", "data"),
+    State("test-visibility", "data"),
+    State("added-trims", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def ensure_spline_knots(store, comp_data, px_data, fit_settings,
+                        test_vis, added_trims, units):
+    """Place 25 knots along a generated spline the first time spline mode is on."""
+    if not store or not comp_data:
+        raise PreventUpdate
+    changed = False
+    groups = comp_data.get("groups") or []
+    tv = test_vis or {}
+    fs = fit_settings or {}
+    for chart in ("head", "power", "efficiency"):
+        chart_ss = store.get(chart) or {}
+        if not isinstance(chart_ss, dict):
+            continue
+        chart_tv = tv if isinstance(tv, dict) else {}
+        chart_fs = fs.get(chart) or {}
+        for group_key, ss in list(chart_ss.items()):
+            if not isinstance(ss, dict) or not ss.get("spline_on"):
+                continue
+            if _knots_are_absolute(ss.get("knots")) and not ss.get("regenerate_knots"):
+                continue
+            try:
+                gi = int(group_key)
+            except (TypeError, ValueError):
+                continue
+            flow, values = _visible_points_for_knots(
+                gi, chart, groups, chart_tv, added_trims, px_data, units,
+            )
+            if len(flow) < 2:
+                continue
+            poly_order = int((chart_fs.get(group_key) or {}).get("poly_order", 3))
+            ss["knots"] = _generate_knots(flow, values, poly_order, MAX_KNOTS)
+            ss["regenerate_knots"] = False
+            changed = True
+    if not changed:
+        raise PreventUpdate
+    return store
+
 
 # =====================================================================
 # MAIN CHART BUILDER
@@ -814,10 +925,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     x_fit = fit_f[fm]
 
                     if spline_on:
-                        kf = [k["flow"] for k in knots]
-                        kn = [k["nudge_pct"] for k in knots]
-                        x_fit, y_fit = _fit_piecewise_spline(
-                            fit_f, fit_y, kf, kn, smoothing)
+                        x_fit, y_fit = _resolve_spline_fit(
+                            fit_f, fit_y, knots, smoothing, min_fit, max_fit)
                     else:
                         try:
                             order = min(poly_order, len(fit_f) - 1)
@@ -865,6 +974,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
                             f'{nom_dia}" Best Fit<br>Q=%{{x:.0f}} GPM<br>'
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
+                    if spline_on:
+                        _add_spline_knots(fig, knots, chart_type, gi, color, units)
 
             elif len(all_flow) >= 3:
                 all_flow_arr = np.array(all_flow)
@@ -909,10 +1020,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
 
                 if len(fit_f) >= 3:
                     if spline_on:
-                        kf = [k["flow"] for k in knots]
-                        kn = [k["nudge_pct"] for k in knots]
-                        x_fit, y_fit = _fit_piecewise_spline(
-                            fit_f, fit_y, kf, kn, smoothing)
+                        x_fit, y_fit = _resolve_spline_fit(
+                            fit_f, fit_y, knots, smoothing, min_fit, max_fit)
                     else:
                         try:
                             order = min(poly_order, len(fit_f) - 1)
@@ -946,6 +1055,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
                             f'{nom_dia}" Best Fit<br>Q=%{{x:.0f}} GPM<br>'
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
+                    if spline_on:
+                        _add_spline_knots(fig, knots, chart_type, gi, color, units)
 
     # -- 3. Virtual trim groups ----------------------------------------
     if added_trims and comp_data and px_data and show_baseline:
@@ -1284,12 +1395,13 @@ def _build_source_fit(
             except (KeyError, TypeError, ValueError):
                 continue
 
-        x_fit, y_fit = _fit_piecewise_spline(
+        x_fit, y_fit = _resolve_spline_fit(
             fit_flow,
             fit_values,
-            knot_flows,
-            knot_nudges,
+            knots,
             smoothing,
+            min_fit,
+            max_fit,
         )
 
         # Keep the spline inside the user's selected range.
@@ -1689,10 +1801,8 @@ def _render_virtual_groups(fig, chart_type, units, y_title,
             if len(vf_fit) >= 3:
                 try:
                     if spline_on:
-                        kf = [k["flow"] for k in knots]
-                        kn = [k["nudge_pct"] for k in knots]
-                        x_fit, y_fit = _fit_piecewise_spline(
-                            vf_fit, vy_fit, kf, kn, smoothing)
+                        x_fit, y_fit = _resolve_spline_fit(
+                            vf_fit, vy_fit, knots, smoothing, vmin_fit, vmax_fit)
                         trunc = (
                             (x_fit >= vmin_fit) & 
                             (x_fit <= vmax_fit)
@@ -1729,8 +1839,201 @@ def _render_virtual_groups(fig, chart_type, units, y_title,
                             f'Added {v_dia:.3f}" Fit<br>Q=%{{x:.0f}} GPM<br>'
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
+                    if spline_on:
+                        _add_spline_knots(fig, knots, chart_type, fit_idx, color, units)
                 except Exception:
                     pass
+
+
+
+def _knots_are_absolute(knots):
+    """True when knots carry a y value, not only a percent nudge."""
+    for knot in knots or []:
+        if isinstance(knot, dict) and knot.get("y") is not None:
+            return True
+    return False
+
+
+def _unique_increasing(x, y):
+    order = np.argsort(np.asarray(x, dtype=float))
+    xs = np.asarray(x, dtype=float)[order]
+    ys = np.asarray(y, dtype=float)[order]
+    valid = np.isfinite(xs) & np.isfinite(ys)
+    xs, ys = xs[valid], ys[valid]
+    if len(xs) == 0:
+        return xs, ys
+    keep_x = [xs[0]]
+    keep_y = [ys[0]]
+    for xv, yv in zip(xs[1:], ys[1:]):
+        if abs(xv - keep_x[-1]) < 1e-6:
+            keep_y[-1] = (keep_y[-1] + yv) / 2.0
+            continue
+        keep_x.append(xv)
+        keep_y.append(yv)
+    return np.asarray(keep_x, dtype=float), np.asarray(keep_y, dtype=float)
+
+
+def _generate_knots(flow, values, poly_order=3, n_knots=MAX_KNOTS):
+    """Sample n_knots points along a spline through the visible test data."""
+    xs, ys = _unique_increasing(flow, values)
+    if len(xs) < 2:
+        return []
+    xk = np.linspace(xs.min(), xs.max(), int(n_knots))
+    try:
+        from scipy.interpolate import UnivariateSpline
+        if len(xs) >= 4:
+            variance = float(np.var(ys)) or 1.0
+            seed = UnivariateSpline(xs, ys, s=0.02 * len(xs) * variance, k=3)
+            yk = seed(xk)
+        else:
+            yk = np.interp(xk, xs, ys)
+    except Exception:
+        order = min(max(int(poly_order or 1), 1), len(xs) - 1)
+        try:
+            yk = np.polyval(np.polyfit(xs, ys, order), xk)
+        except Exception:
+            yk = np.interp(xk, xs, ys)
+    return [{"flow": float(x), "y": float(y)} for x, y in zip(xk, yk)]
+
+
+def _fit_through_knots(knots, smoothing=0.3, n_out=200):
+    """Spline through absolute knot positions. smoothing 0 interpolates."""
+    flows, values = [], []
+    for knot in knots or []:
+        if not isinstance(knot, dict) or knot.get("y") is None:
+            continue
+        try:
+            flows.append(float(knot["flow"]))
+            values.append(float(knot["y"]))
+        except (TypeError, ValueError):
+            continue
+    xs, ys = _unique_increasing(flows, values)
+    if len(xs) < 2:
+        return None, None
+    x_fit = np.linspace(xs.min(), xs.max(), n_out)
+    if len(xs) < 4:
+        return x_fit, np.interp(x_fit, xs, ys)
+    try:
+        from scipy.interpolate import UnivariateSpline
+        variance = float(np.var(ys)) or 1.0
+        s_param = max(0.0, float(smoothing or 0)) * len(xs) * variance * 0.5
+        spline = UnivariateSpline(xs, ys, s=s_param, k=3)
+        return x_fit, spline(x_fit)
+    except Exception:
+        return x_fit, np.interp(x_fit, xs, ys)
+
+
+def _resolve_spline_fit(flow, y, knots, smoothing, min_fit, max_fit):
+    """Absolute knots win. Legacy nudge knots still use the old fit."""
+    if _knots_are_absolute(knots):
+        x_fit, y_fit = _fit_through_knots(knots, smoothing)
+        if x_fit is None:
+            x_fit, y_fit = _fit_piecewise_spline(flow, y, [], [], smoothing)
+    else:
+        knot_flows, knot_nudges = [], []
+        for knot in knots or []:
+            try:
+                knot_flows.append(float(knot["flow"]))
+                knot_nudges.append(float(knot.get("nudge_pct", 0)))
+            except (KeyError, TypeError, ValueError):
+                continue
+        x_fit, y_fit = _fit_piecewise_spline(
+            flow, y, knot_flows, knot_nudges, smoothing)
+    x_fit = np.asarray(x_fit, dtype=float)
+    y_fit = np.asarray(y_fit, dtype=float)
+    if min_fit is not None and max_fit is not None and len(x_fit):
+        mask = (x_fit >= min_fit) & (x_fit <= max_fit)
+        if np.any(mask):
+            x_fit, y_fit = x_fit[mask], y_fit[mask]
+    return x_fit, y_fit
+
+
+def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
+    if not _knots_are_absolute(knots):
+        return
+    flows, values = [], []
+    for knot in knots:
+        try:
+            flows.append(float(knot["flow"]))
+            values.append(float(knot["y"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    if len(flows) < 2:
+        return
+    order = np.argsort(flows)
+    flows = np.asarray(flows, dtype=float)[order]
+    values = np.asarray(values, dtype=float)[order]
+    if chart_type == "head" and units == "psi":
+        values = values * FEET_TO_PSI
+    fig.add_trace(go.Scatter(
+        x=flows,
+        y=values,
+        mode="markers",
+        name=f"spline-knots|{chart_type}|{group_index}",
+        marker=dict(
+            size=12,
+            symbol="circle",
+            color=color,
+            line=dict(width=2, color="#ffffff"),
+        ),
+        hovertemplate=(
+            "Drag point<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
+        ),
+        showlegend=False,
+        legendgroup=f"grp_{group_index}",
+    ))
+
+
+def _visible_points_for_knots(group_index, chart, groups, test_vis,
+                              added_trims, px_data, units):
+    """Visible flow/value pairs used to seed a spline. Head is stored in feet."""
+    if chart == "efficiency":
+        y_key = "scaled_efficiency"
+    elif chart == "head":
+        y_key = "scaled_head"
+    else:
+        y_key = "scaled_power"
+    tests = []
+    if group_index >= VIRTUAL_INDEX_OFFSET and added_trims and px_data:
+        vi = group_index - VIRTUAL_INDEX_OFFSET
+        if 0 <= vi < len(added_trims):
+            v_dia = float(added_trims[vi]["diameter"])
+            diameters = [float(t["diameter"]) for t in px_data.get("trims", [])]
+            for grp in groups:
+                for test in grp.get("tests", []):
+                    if not test.get("has_data"):
+                        continue
+                    td = test.get("trim_diameter")
+                    if td is None or not diameters:
+                        continue
+                    if abs(float(td) - v_dia) < min(abs(float(td) - d) for d in diameters):
+                        tests.append(test)
+    elif 0 <= group_index < len(groups):
+        tests = groups[group_index].get("tests") or []
+
+    all_flow, all_y = [], []
+    counter = 0
+    for test in tests:
+        if not test.get("has_data"):
+            continue
+        vis_key = f"{group_index}-{counter}"
+        counter += 1
+        if not test_vis.get(vis_key, True):
+            continue
+        flow = test.get("scaled_flow")
+        values = test.get(y_key)
+        if flow is None or values is None:
+            continue
+        flow = np.asarray(flow, dtype=float)
+        values = np.asarray(values, dtype=float)
+        mask = np.isfinite(flow) & np.isfinite(values) & (flow >= 0)
+        if chart == "power":
+            mask &= values > 0
+        if chart == "efficiency":
+            mask &= (values > 0) & (values <= 100)
+        all_flow.extend(flow[mask].tolist())
+        all_y.extend(values[mask].tolist())
+    return np.asarray(all_flow, dtype=float), np.asarray(all_y, dtype=float)
 
 
 # =====================================================================

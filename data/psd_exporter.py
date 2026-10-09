@@ -512,9 +512,12 @@ def _do_fit(fit_f, fit_y, poly_order, max_fit,
             spline_on, knots, smoothing):
     """Run poly or spline fit, returning (x_fit, y_fit)."""
     if spline_on:
-        kf = [k["flow"] for k in knots]
-        kn = [k["nudge_pct"] for k in knots]
-        x_fit, y_fit = _fit_piecewise_spline(fit_f, fit_y, kf, kn, smoothing)
+        if any(isinstance(k, dict) and k.get("y") is not None for k in (knots or [])):
+            x_fit, y_fit = _fit_absolute_knots(knots, smoothing)
+        else:
+            kf = [k["flow"] for k in knots]
+            kn = [k["nudge_pct"] for k in knots]
+            x_fit, y_fit = _fit_piecewise_spline(fit_f, fit_y, kf, kn, smoothing)
         trunc = x_fit <= max_fit
         if np.any(trunc):
             x_fit = x_fit[trunc]
@@ -530,6 +533,42 @@ def _do_fit(fit_f, fit_y, poly_order, max_fit,
             y_fit = fit_y[np.argsort(fit_f)]
 
     return x_fit, y_fit
+
+
+
+def _fit_absolute_knots(knots, smoothing=0.3):
+    """Spline through dragged knot positions. Matches chart_callbacks."""
+    pts = []
+    for knot in knots or []:
+        try:
+            pts.append((float(knot["flow"]), float(knot["y"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+    pts.sort(key=lambda item: item[0])
+    xs, ys = [], []
+    for flow, value in pts:
+        if not (np.isfinite(flow) and np.isfinite(value)):
+            continue
+        if xs and abs(flow - xs[-1]) < 1e-6:
+            ys[-1] = (ys[-1] + value) / 2.0
+            continue
+        xs.append(flow)
+        ys.append(value)
+    if len(xs) < 2:
+        return np.array([]), np.array([])
+    xs = np.asarray(xs, dtype=float)
+    ys = np.asarray(ys, dtype=float)
+    x_fit = np.linspace(xs.min(), xs.max(), 200)
+    if len(xs) < 4:
+        return x_fit, np.interp(x_fit, xs, ys)
+    try:
+        from scipy.interpolate import UnivariateSpline
+        variance = float(np.var(ys)) or 1.0
+        s_param = max(0.0, float(smoothing or 0)) * len(xs) * variance * 0.5
+        spline = UnivariateSpline(xs, ys, s=s_param, k=3)
+        return x_fit, spline(x_fit)
+    except Exception:
+        return x_fit, np.interp(x_fit, xs, ys)
 
 
 def _fit_piecewise_spline(flow, y, knot_flows, knot_nudges,
