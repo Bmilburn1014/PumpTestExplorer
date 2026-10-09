@@ -339,6 +339,8 @@ def _center_panel():
     gcfg = {
         "scrollZoom": True,
         "displayModeBar": True,
+        "editable": True,
+        "edits": {"shapePosition": True},
         "modeBarButtonsToAdd": [
             "drawline", "drawrect", "eraseshape",
         ],

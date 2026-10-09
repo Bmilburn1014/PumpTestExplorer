@@ -354,156 +354,75 @@ def build_knots_for_group(
 # DRAGGABLE SPLINE KNOTS
 # =====================================================================
 
-clientside_callback(
-    """
-    function(fig) {
-        if (!window.__knotDragV4) {
-            window.__knotDragV4 = true;
-            var GRAPH_IDS = ["main-chart", "combined-chart"];
-            var HIT_PX = 22;
-            function plotNode(id) {
-                var root = document.getElementById(id);
-                if (!root) return null;
-                if (root.classList && root.classList.contains("js-plotly-plot")) return root;
-                return root.querySelector(".js-plotly-plot");
-            }
-            function axisById(gd, id) {
-                var layout = gd && gd._fullLayout;
-                if (!layout) return null;
-                id = id || "x";
-                if (layout[id] && layout[id].d2p) return layout[id];
-                var prefix = id.charAt(0) === "y" ? "yaxis" : "xaxis";
-                var key = id.length > 1 ? prefix + id.slice(1) : prefix;
-                return layout[key] || null;
-            }
-            function nearestKnot(gd, evt) {
-                if (!gd || !gd.data || !gd._fullLayout) return null;
-                var bb = gd.getBoundingClientRect();
-                var px = evt.clientX - bb.left;
-                var py = evt.clientY - bb.top;
-                var best = null;
-                var bestDist = HIT_PX * HIT_PX;
-                for (var ti = 0; ti < gd.data.length; ti++) {
-                    var trace = gd.data[ti];
-                    if (!trace || String(trace.name || "").indexOf("spline-knots|") !== 0) continue;
-                    var xa = axisById(gd, trace.xaxis || "x");
-                    var ya = axisById(gd, trace.yaxis || "y");
-                    if (!xa || !ya || !xa.d2p || !ya.d2p) continue;
-                    var xs = trace.x || [];
-                    var ys = trace.y || [];
-                    for (var i = 0; i < xs.length; i++) {
-                        var sx = xa._offset + xa.d2p(+xs[i]);
-                        var sy = ya._offset + ya.d2p(+ys[i]);
-                        if (!isFinite(sx) || !isFinite(sy)) continue;
-                        var dx = px - sx;
-                        var dy = py - sy;
-                        var dist = dx * dx + dy * dy;
-                        if (dist <= bestDist) {
-                            bestDist = dist;
-                            best = {curve: ti, point: i, name: trace.name,
-                                    xaxisId: trace.xaxis || "x", yaxisId: trace.yaxis || "y"};
-                        }
-                    }
-                }
-                return best;
-            }
-            function pixelToData(gd, drag, evt) {
-                var bb = gd.getBoundingClientRect();
-                var xa = axisById(gd, drag.xaxisId);
-                var ya = axisById(gd, drag.yaxisId);
-                if (!xa || !ya || !xa.p2d || !ya.p2d) return null;
-                var x = xa.p2d(evt.clientX - bb.left - xa._offset);
-                var y = ya.p2d(evt.clientY - bb.top - ya._offset);
-                if (!isFinite(x) || !isFinite(y)) return null;
-                return [x, y];
-            }
-            function activeDrag() {
-                for (var g = 0; g < GRAPH_IDS.length; g++) {
-                    var gd = plotNode(GRAPH_IDS[g]);
-                    if (gd && gd.__knotDragging) return gd;
-                }
-                return null;
-            }
-            function swallow(evt) {
-                evt.preventDefault();
-                evt.stopPropagation();
-                if (evt.stopImmediatePropagation) evt.stopImmediatePropagation();
-            }
-            function onDown(evt) {
-                if (evt.button !== undefined && evt.button !== 0) return;
-                for (var g = 0; g < GRAPH_IDS.length; g++) {
-                    var gd = plotNode(GRAPH_IDS[g]);
-                    if (!gd) continue;
-                    var bb = gd.getBoundingClientRect();
-                    if (evt.clientX < bb.left || evt.clientX > bb.right ||
-                        evt.clientY < bb.top || evt.clientY > bb.bottom) continue;
-                    var hit = nearestKnot(gd, evt);
-                    if (!hit) continue;
-                    gd.__knotDragging = hit;
-                    if (gd._fullLayout) gd._fullLayout.dragmode = false;
-                    gd.style.cursor = "grabbing";
-                    swallow(evt);
-                    return;
-                }
-            }
-            function onMove(evt) {
-                var gd = activeDrag();
-                if (!gd) return;
-                var drag = gd.__knotDragging;
-                var xy = pixelToData(gd, drag, evt);
-                if (xy && gd.data[drag.curve]) {
-                    var xs = Array.prototype.slice.call(gd.data[drag.curve].x);
-                    var ys = Array.prototype.slice.call(gd.data[drag.curve].y);
-                    xs[drag.point] = xy[0];
-                    ys[drag.point] = xy[1];
-                    drag.xs = xs;
-                    drag.ys = ys;
-                    window.Plotly.restyle(gd, {x: [xs], y: [ys]}, [drag.curve]);
-                }
-                swallow(evt);
-            }
-            function onUp(evt) {
-                var gd = activeDrag();
-                if (!gd) return;
-                var drag = gd.__knotDragging;
-                gd.__knotDragging = null;
-                gd.style.cursor = "";
-                if (gd._fullLayout) gd._fullLayout.dragmode = "zoom";
-                var xs = drag.xs;
-                var ys = drag.ys;
-                if (xs && ys && window.dash_clientside && window.dash_clientside.set_props) {
-                    var parts = String(drag.name || "").split("|");
-                    var knots = [];
-                    for (var i = 0; i < xs.length; i++) knots.push({flow: xs[i], y: ys[i]});
-                    window.dash_clientside.set_props("knot-drag-store", {
-                        data: {chart: parts[1], group: parts[2], knots: knots, t: Date.now()}
-                    });
-                }
-                if (evt) swallow(evt);
-            }
-            document.addEventListener("pointerdown", onDown, true);
-            document.addEventListener("mousedown", onDown, true);
-            document.addEventListener("pointermove", onMove, true);
-            document.addEventListener("mousemove", onMove, true);
-            document.addEventListener("pointerup", onUp, true);
-            document.addEventListener("mouseup", onUp, true);
-        }
-        return window.dash_clientside.no_update;
-    }
-    """,
-    Output("knot-drag-store", "data", allow_duplicate=True),
-    Input("main-chart", "figure"),
-    prevent_initial_call=True,
-)
-
 
 @callback(
     Output("shape-settings", "data", allow_duplicate=True),
-    Input("knot-drag-store", "data"),
+    Input("main-chart", "relayoutData"),
+    State("main-chart", "figure"),
     State("shape-settings", "data"),
     State("unit-toggle", "value"),
     prevent_initial_call=True,
 )
+def apply_shape_drag(relayout, figure, store, units):
+    """Plotly drags the knot rings itself. Copy the new centers into settings."""
+    if not isinstance(relayout, dict) or not figure:
+        raise PreventUpdate
+    shapes = ((figure.get("layout") or {}).get("shapes")) or []
+    if isinstance(relayout.get("shapes"), list):
+        shapes = relayout["shapes"]
+    moved = {}
+    for key, value in relayout.items():
+        if not isinstance(key, str) or not key.startswith("shapes["):
+            continue
+        try:
+            index = int(key.split("[", 1)[1].split("]", 1)[0])
+            prop = key.split(".", 1)[1]
+        except (IndexError, ValueError):
+            continue
+        moved.setdefault(index, {})[prop] = value
+    if not moved and not isinstance(relayout.get("shapes"), list):
+        raise PreventUpdate
+
+    store = store or {"head": {}, "power": {}, "active": "head"}
+    changed = False
+    indexes = moved.keys() if moved else range(len(shapes))
+    for index in indexes:
+        if index >= len(shapes):
+            continue
+        shape = dict(shapes[index] or {})
+        shape.update(moved.get(index, {}))
+        name = str(shape.get("name") or "")
+        parts = name.split("|")
+        if len(parts) != 4 or parts[0] != "spline-knot":
+            continue
+        _, chart, group_key, _point = parts
+        try:
+            x0, x1 = float(shape["x0"]), float(shape["x1"])
+            y0, y1 = float(shape["y0"]), float(shape["y1"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        flow = (x0 + x1) / 2.0
+        value = (y0 + y1) / 2.0
+        if chart == "head" and units == "psi":
+            value = value / FEET_TO_PSI
+        store.setdefault(chart, {})
+        store[chart].setdefault(group_key, {})
+        knots = list(store[chart][group_key].get("knots") or [])
+        try:
+            point = int(_point)
+        except ValueError:
+            continue
+        if point >= len(knots):
+            continue
+        knots[point] = {"flow": flow, "y": value}
+        store[chart][group_key]["knots"] = knots
+        store[chart][group_key]["spline_on"] = True
+        changed = True
+    if not changed:
+        raise PreventUpdate
+    return store
+
+
 def apply_dragged_knots(payload, store, units):
     """Write chart-dragged knot positions back into shape settings."""
     if not isinstance(payload, dict):
@@ -2120,11 +2039,31 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
             line=dict(width=2, color="#ffffff"),
         ),
         hovertemplate=(
-            "Drag point<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
+            "Drag the ring<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
         ),
         showlegend=False,
         legendgroup=f"grp_{group_index}",
     ))
+    x_span = max(float(flows.max() - flows.min()), 1.0)
+    y_span = max(float(values.max() - values.min()), 1.0)
+    rx = x_span * 0.018
+    ry = y_span * 0.035
+    for i, (flow, value) in enumerate(zip(flows, values)):
+        fig.add_shape(
+            type="circle",
+            xref="x",
+            yref="y",
+            x0=float(flow) - rx,
+            x1=float(flow) + rx,
+            y0=float(value) - ry,
+            y1=float(value) + ry,
+            line=dict(color=color, width=2),
+            fillcolor=color,
+            opacity=0.45,
+            layer="above",
+            editable=True,
+            name=f"spline-knot|{chart_type}|{group_index}|{i}",
+        )
 
 
 def _visible_points_for_knots(group_index, chart, groups, test_vis,
