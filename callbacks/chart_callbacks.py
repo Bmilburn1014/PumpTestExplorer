@@ -1146,7 +1146,9 @@ def _build_chart(chart_type, units, px_data, comp_data,
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
                     if spline_on:
-                        _add_spline_knots(fig, knots, chart_type, gi, color, units)
+                        draw_knots = knots if _knots_are_absolute(knots) else _generate_knots(
+                            fit_f, fit_y, poly_order, MAX_KNOTS)
+                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units)
 
             elif len(all_flow) >= 3:
                 all_flow_arr = np.array(all_flow)
@@ -1227,7 +1229,9 @@ def _build_chart(chart_type, units, px_data, comp_data,
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
                     if spline_on:
-                        _add_spline_knots(fig, knots, chart_type, gi, color, units)
+                        draw_knots = knots if _knots_are_absolute(knots) else _generate_knots(
+                            fit_f, fit_y, poly_order, MAX_KNOTS)
+                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units)
 
     # -- 3. Virtual trim groups ----------------------------------------
     if added_trims and comp_data and px_data and show_baseline:
@@ -2011,7 +2015,9 @@ def _render_virtual_groups(fig, chart_type, units, y_title,
                             f'{y_title}=%{{y:.1f}}<extra></extra>'),
                     ))
                     if spline_on:
-                        _add_spline_knots(fig, knots, chart_type, fit_idx, color, units)
+                        draw_knots = knots if _knots_are_absolute(knots) else _generate_knots(
+                            vf_fit, vy_fit, poly_order, MAX_KNOTS)
+                        _add_spline_knots(fig, draw_knots, chart_type, fit_idx, color, units)
                 except Exception:
                     pass
 
@@ -2147,10 +2153,10 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
         mode="markers",
         name=f"spline-knots|{chart_type}|{group_index}",
         marker=dict(
-            size=14,
+            size=16,
             symbol="circle",
             color=color,
-            line=dict(width=2, color="#ffffff"),
+            line=dict(width=2, color="#111111"),
         ),
         hovertemplate=(
             "Drag the ring<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
@@ -2163,21 +2169,24 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
     rx = x_span * 0.018
     ry = y_span * 0.035
     for i, (flow, value) in enumerate(zip(flows, values)):
-        fig.add_shape(
-            type="circle",
-            xref="x",
-            yref="y",
-            x0=float(flow) - rx,
-            x1=float(flow) + rx,
-            y0=float(value) - ry,
-            y1=float(value) + ry,
-            line=dict(color=color, width=2),
-            fillcolor=color,
-            opacity=0.45,
-            layer="above",
-            editable=True,
-            name=f"spline-knot|{chart_type}|{group_index}|{i}",
-        )
+        try:
+            fig.add_shape(
+                type="circle",
+                xref="x",
+                yref="y",
+                x0=float(flow) - rx,
+                x1=float(flow) + rx,
+                y0=float(value) - ry,
+                y1=float(value) + ry,
+                line=dict(color="#111111", width=2),
+                fillcolor=color,
+                opacity=0.85,
+                layer="above",
+                editable=True,
+                name=f"spline-knot|{chart_type}|{group_index}|{i}",
+            )
+        except Exception:
+            pass
 
 
 def _visible_points_for_knots(group_index, chart, groups, test_vis,
