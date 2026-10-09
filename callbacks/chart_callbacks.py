@@ -1971,7 +1971,7 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
         mode="markers",
         name=f"spline-knots|{chart_type}|{group_index}",
         marker=dict(
-            size=12,
+            size=14,
             symbol="circle",
             color=color,
             line=dict(width=2, color="#ffffff"),
