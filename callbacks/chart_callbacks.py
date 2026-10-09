@@ -15,7 +15,7 @@
 
 import pandas as pd
 import numpy as np
-from dash import callback, Input, Output, State, ALL, no_update, ctx, Patch
+from dash import callback, clientside_callback, Input, Output, State, ALL, no_update, ctx, Patch
 import plotly.graph_objects as go
 from dash.exceptions import PreventUpdate
 from layout.main_layout import GROUP_COLORS, MAX_KNOTS
@@ -353,6 +353,149 @@ def build_knots_for_group(
 # =====================================================================
 # DRAGGABLE SPLINE KNOTS
 # =====================================================================
+
+clientside_callback(
+    """
+    function(fig) {
+        if (!window.__knotDragV4) {
+            window.__knotDragV4 = true;
+            var GRAPH_IDS = ["main-chart", "combined-chart"];
+            var HIT_PX = 22;
+            function plotNode(id) {
+                var root = document.getElementById(id);
+                if (!root) return null;
+                if (root.classList && root.classList.contains("js-plotly-plot")) return root;
+                return root.querySelector(".js-plotly-plot");
+            }
+            function axisById(gd, id) {
+                var layout = gd && gd._fullLayout;
+                if (!layout) return null;
+                id = id || "x";
+                if (layout[id] && layout[id].d2p) return layout[id];
+                var prefix = id.charAt(0) === "y" ? "yaxis" : "xaxis";
+                var key = id.length > 1 ? prefix + id.slice(1) : prefix;
+                return layout[key] || null;
+            }
+            function nearestKnot(gd, evt) {
+                if (!gd || !gd.data || !gd._fullLayout) return null;
+                var bb = gd.getBoundingClientRect();
+                var px = evt.clientX - bb.left;
+                var py = evt.clientY - bb.top;
+                var best = null;
+                var bestDist = HIT_PX * HIT_PX;
+                for (var ti = 0; ti < gd.data.length; ti++) {
+                    var trace = gd.data[ti];
+                    if (!trace || String(trace.name || "").indexOf("spline-knots|") !== 0) continue;
+                    var xa = axisById(gd, trace.xaxis || "x");
+                    var ya = axisById(gd, trace.yaxis || "y");
+                    if (!xa || !ya || !xa.d2p || !ya.d2p) continue;
+                    var xs = trace.x || [];
+                    var ys = trace.y || [];
+                    for (var i = 0; i < xs.length; i++) {
+                        var sx = xa._offset + xa.d2p(+xs[i]);
+                        var sy = ya._offset + ya.d2p(+ys[i]);
+                        if (!isFinite(sx) || !isFinite(sy)) continue;
+                        var dx = px - sx;
+                        var dy = py - sy;
+                        var dist = dx * dx + dy * dy;
+                        if (dist <= bestDist) {
+                            bestDist = dist;
+                            best = {curve: ti, point: i, name: trace.name,
+                                    xaxisId: trace.xaxis || "x", yaxisId: trace.yaxis || "y"};
+                        }
+                    }
+                }
+                return best;
+            }
+            function pixelToData(gd, drag, evt) {
+                var bb = gd.getBoundingClientRect();
+                var xa = axisById(gd, drag.xaxisId);
+                var ya = axisById(gd, drag.yaxisId);
+                if (!xa || !ya || !xa.p2d || !ya.p2d) return null;
+                var x = xa.p2d(evt.clientX - bb.left - xa._offset);
+                var y = ya.p2d(evt.clientY - bb.top - ya._offset);
+                if (!isFinite(x) || !isFinite(y)) return null;
+                return [x, y];
+            }
+            function activeDrag() {
+                for (var g = 0; g < GRAPH_IDS.length; g++) {
+                    var gd = plotNode(GRAPH_IDS[g]);
+                    if (gd && gd.__knotDragging) return gd;
+                }
+                return null;
+            }
+            function swallow(evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
+                if (evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+            }
+            function onDown(evt) {
+                if (evt.button !== undefined && evt.button !== 0) return;
+                for (var g = 0; g < GRAPH_IDS.length; g++) {
+                    var gd = plotNode(GRAPH_IDS[g]);
+                    if (!gd) continue;
+                    var bb = gd.getBoundingClientRect();
+                    if (evt.clientX < bb.left || evt.clientX > bb.right ||
+                        evt.clientY < bb.top || evt.clientY > bb.bottom) continue;
+                    var hit = nearestKnot(gd, evt);
+                    if (!hit) continue;
+                    gd.__knotDragging = hit;
+                    if (gd._fullLayout) gd._fullLayout.dragmode = false;
+                    gd.style.cursor = "grabbing";
+                    swallow(evt);
+                    return;
+                }
+            }
+            function onMove(evt) {
+                var gd = activeDrag();
+                if (!gd) return;
+                var drag = gd.__knotDragging;
+                var xy = pixelToData(gd, drag, evt);
+                if (xy && gd.data[drag.curve]) {
+                    var xs = Array.prototype.slice.call(gd.data[drag.curve].x);
+                    var ys = Array.prototype.slice.call(gd.data[drag.curve].y);
+                    xs[drag.point] = xy[0];
+                    ys[drag.point] = xy[1];
+                    drag.xs = xs;
+                    drag.ys = ys;
+                    window.Plotly.restyle(gd, {x: [xs], y: [ys]}, [drag.curve]);
+                }
+                swallow(evt);
+            }
+            function onUp(evt) {
+                var gd = activeDrag();
+                if (!gd) return;
+                var drag = gd.__knotDragging;
+                gd.__knotDragging = null;
+                gd.style.cursor = "";
+                if (gd._fullLayout) gd._fullLayout.dragmode = "zoom";
+                var xs = drag.xs;
+                var ys = drag.ys;
+                if (xs && ys && window.dash_clientside && window.dash_clientside.set_props) {
+                    var parts = String(drag.name || "").split("|");
+                    var knots = [];
+                    for (var i = 0; i < xs.length; i++) knots.push({flow: xs[i], y: ys[i]});
+                    window.dash_clientside.set_props("knot-drag-store", {
+                        data: {chart: parts[1], group: parts[2], knots: knots, t: Date.now()}
+                    });
+                }
+                if (evt) swallow(evt);
+            }
+            document.addEventListener("pointerdown", onDown, true);
+            document.addEventListener("mousedown", onDown, true);
+            document.addEventListener("pointermove", onMove, true);
+            document.addEventListener("mousemove", onMove, true);
+            document.addEventListener("pointerup", onUp, true);
+            document.addEventListener("mouseup", onUp, true);
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("knot-drag-store", "data", allow_duplicate=True),
+    Input("main-chart", "figure"),
+    prevent_initial_call=True,
+)
+
 
 @callback(
     Output("shape-settings", "data", allow_duplicate=True),

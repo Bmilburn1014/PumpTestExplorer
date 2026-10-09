@@ -740,7 +740,8 @@ def _build_shape_section(idx, chart_type, ss=None):
                 ),
                 html.Div(
                     "Builds a spline with 25 points on the chart. "
-                    "Drag a point up, down, left, or right. "
+                    "Press a colored point and drag it. "
+                    "Zoom is blocked while a point is held. "
                     "The slider sets how tightly the curve follows the points.",
                     className="hint-text",
                 ),
