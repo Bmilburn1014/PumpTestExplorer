@@ -561,10 +561,14 @@ def _fit_absolute_knots(knots, smoothing=0.3):
     x_fit = np.linspace(xs.min(), xs.max(), 200)
     if len(xs) < 4:
         return x_fit, np.interp(x_fit, xs, ys)
+    smooth = max(0.0, float(smoothing or 0))
     try:
+        if smooth <= 0.15:
+            from scipy.interpolate import PchipInterpolator
+            return x_fit, PchipInterpolator(xs, ys)(x_fit)
         from scipy.interpolate import UnivariateSpline
         variance = float(np.var(ys)) or 1.0
-        s_param = max(0.0, float(smoothing or 0)) * len(xs) * variance * 0.5
+        s_param = smooth * len(xs) * variance * 0.5
         spline = UnivariateSpline(xs, ys, s=s_param, k=3)
         return x_fit, spline(x_fit)
     except Exception:

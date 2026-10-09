@@ -355,72 +355,99 @@ def build_knots_for_group(
 # =====================================================================
 
 
-@callback(
-    Output("shape-settings", "data", allow_duplicate=True),
-    Input("main-chart", "relayoutData"),
-    State("main-chart", "figure"),
-    State("shape-settings", "data"),
-    State("unit-toggle", "value"),
+clientside_callback(
+    """
+    function(fig) {
+        if (window.__knotCommitV5) return window.dash_clientside.no_update;
+        window.__knotCommitV5 = true;
+        function plotNode() {
+            var root = document.getElementById("main-chart");
+            if (!root) return null;
+            if (root.classList && root.classList.contains("js-plotly-plot")) return root;
+            return root.querySelector(".js-plotly-plot");
+        }
+        function centers(gd) {
+            var shapes = (gd.layout && gd.layout.shapes) || [];
+            var out = [];
+            for (var i = 0; i < shapes.length; i++) {
+                var s = shapes[i];
+                if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
+                out.push({
+                    name: s.name,
+                    flow: (+s.x0 + +s.x1) / 2,
+                    y: (+s.y0 + +s.y1) / 2
+                });
+            }
+            return out;
+        }
+        function commit(gd) {
+            var pts = centers(gd);
+            if (!pts.length || !window.dash_clientside) return;
+            var parts = String(pts[0].name).split("|");
+            window.dash_clientside.set_props("knot-drag-store", {
+                data: {chart: parts[1], group: parts[2], knots: pts, t: Date.now()}
+            });
+        }
+        var before = null;
+        document.addEventListener("pointerdown", function (evt) {
+            var gd = plotNode();
+            if (!gd) return;
+            var bb = gd.getBoundingClientRect();
+            if (evt.clientX < bb.left || evt.clientX > bb.right ||
+                evt.clientY < bb.top || evt.clientY > bb.bottom) return;
+            before = centers(gd);
+        }, true);
+        document.addEventListener("pointerup", function () {
+            var gd = plotNode();
+            if (!gd || !before) return;
+            var after = centers(gd);
+            var changed = JSON.stringify(after) !== JSON.stringify(before);
+            before = null;
+            if (changed && after.length) commit(gd);
+        }, true);
+        document.addEventListener("keydown", function (evt) {
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(evt.key) < 0) return;
+            var tag = (evt.target && evt.target.tagName) || "";
+            if (tag === "INPUT" || tag === "TEXTAREA") return;
+            var gd = plotNode();
+            if (!gd || !gd.layout || !gd.layout.shapes) return;
+            var shapes = gd.layout.shapes;
+            var idx = gd.__knotIndex || 0;
+            var found = -1;
+            var seen = 0;
+            for (var i = 0; i < shapes.length; i++) {
+                if (String(shapes[i].name || "").indexOf("spline-knot|") !== 0) continue;
+                if (seen === idx) { found = i; break; }
+                seen++;
+            }
+            if (found < 0) return;
+            var step = evt.shiftKey ? 0.004 : 0.02;
+            var xa = gd._fullLayout.xaxis;
+            var ya = gd._fullLayout.yaxis;
+            var dx = (xa.range[1] - xa.range[0]) * step;
+            var dy = (ya.range[1] - ya.range[0]) * step;
+            if (evt.key === "ArrowLeft") dx = -dx; else if (evt.key !== "ArrowRight") dx = 0;
+            if (evt.key === "ArrowDown") dy = -dy; else if (evt.key !== "ArrowUp") dy = 0;
+            var s = shapes[found];
+            window.Plotly.relayout(gd, (function () {
+                var u = {};
+                u["shapes[" + found + "].x0"] = +s.x0 + dx;
+                u["shapes[" + found + "].x1"] = +s.x1 + dx;
+                u["shapes[" + found + "].y0"] = +s.y0 + dy;
+                u["shapes[" + found + "].y1"] = +s.y1 + dy;
+                return u;
+            })());
+            gd.__knotIndex = idx;
+            evt.preventDefault();
+            commit(gd);
+        });
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("knot-drag-store", "data", allow_duplicate=True),
+    Input("main-chart", "figure"),
     prevent_initial_call=True,
 )
-def apply_shape_drag(relayout, figure, store, units):
-    """Plotly drags the knot rings itself. Copy the new centers into settings."""
-    if not isinstance(relayout, dict) or not figure:
-        raise PreventUpdate
-    shapes = ((figure.get("layout") or {}).get("shapes")) or []
-    if isinstance(relayout.get("shapes"), list):
-        shapes = relayout["shapes"]
-    moved = {}
-    for key, value in relayout.items():
-        if not isinstance(key, str) or not key.startswith("shapes["):
-            continue
-        try:
-            index = int(key.split("[", 1)[1].split("]", 1)[0])
-            prop = key.split(".", 1)[1]
-        except (IndexError, ValueError):
-            continue
-        moved.setdefault(index, {})[prop] = value
-    if not moved and not isinstance(relayout.get("shapes"), list):
-        raise PreventUpdate
-
-    store = store or {"head": {}, "power": {}, "active": "head"}
-    changed = False
-    indexes = moved.keys() if moved else range(len(shapes))
-    for index in indexes:
-        if index >= len(shapes):
-            continue
-        shape = dict(shapes[index] or {})
-        shape.update(moved.get(index, {}))
-        name = str(shape.get("name") or "")
-        parts = name.split("|")
-        if len(parts) != 4 or parts[0] != "spline-knot":
-            continue
-        _, chart, group_key, _point = parts
-        try:
-            x0, x1 = float(shape["x0"]), float(shape["x1"])
-            y0, y1 = float(shape["y0"]), float(shape["y1"])
-        except (KeyError, TypeError, ValueError):
-            continue
-        flow = (x0 + x1) / 2.0
-        value = (y0 + y1) / 2.0
-        if chart == "head" and units == "psi":
-            value = value / FEET_TO_PSI
-        store.setdefault(chart, {})
-        store[chart].setdefault(group_key, {})
-        knots = list(store[chart][group_key].get("knots") or [])
-        try:
-            point = int(_point)
-        except ValueError:
-            continue
-        if point >= len(knots):
-            continue
-        knots[point] = {"flow": flow, "y": value}
-        store[chart][group_key]["knots"] = knots
-        store[chart][group_key]["spline_on"] = True
-        changed = True
-    if not changed:
-        raise PreventUpdate
-    return store
 
 
 def apply_dragged_knots(payload, store, units):
@@ -1975,10 +2002,15 @@ def _fit_through_knots(knots, smoothing=0.3, n_out=200):
     x_fit = np.linspace(xs.min(), xs.max(), n_out)
     if len(xs) < 4:
         return x_fit, np.interp(x_fit, xs, ys)
+    smooth = max(0.0, float(smoothing or 0))
     try:
+        if smooth <= 0.15:
+            # Pass through every knot so one lowered point becomes a real dip.
+            from scipy.interpolate import PchipInterpolator
+            return x_fit, PchipInterpolator(xs, ys)(x_fit)
         from scipy.interpolate import UnivariateSpline
         variance = float(np.var(ys)) or 1.0
-        s_param = max(0.0, float(smoothing or 0)) * len(xs) * variance * 0.5
+        s_param = smooth * len(xs) * variance * 0.5
         spline = UnivariateSpline(xs, ys, s=s_param, k=3)
         return x_fit, spline(x_fit)
     except Exception:
