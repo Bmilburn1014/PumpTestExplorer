@@ -19,7 +19,7 @@ VIRTUAL_COLORS = [
     "#e91e63", "#00bcd4", "#ff9800", "#4caf50", "#9c27b0",
 ]
 VIRTUAL_INDEX_OFFSET = 100
-MAX_KNOTS = 25
+MAX_KNOTS = 6
 
 
 def build_layout():
@@ -764,13 +764,34 @@ def _build_shape_section(idx, chart_type, ss=None):
                                  "always_visible": False},
                     ),
                 ]),
-                html.Button(
-                    "Reset 25 points",
-                    id={"type": "spline-reset", "index": idx, "chart": chart_type},
-                    n_clicks=0,
-                    className="btn-auto-clean",
-                    title="Rebuild the 25 points from the visible test data",
+                html.Div(
+                    "Double-click the chart to add a point. "
+                    "Delete removes the selected point. "
+                    "Drag a ring; the curve updates when you release. "
+                    "Set Point fit to Tight to hold a hydraulic dip.",
+                    className="hint-text",
                 ),
+                html.Div(className="fit-row", children=[
+                    html.Button(
+                        "Add point",
+                        id={"type": "spline-add", "index": idx, "chart": chart_type},
+                        n_clicks=0,
+                        className="btn-auto-clean",
+                    ),
+                    html.Button(
+                        "Delete point",
+                        id={"type": "spline-delete", "index": idx, "chart": chart_type},
+                        n_clicks=0,
+                        className="btn-auto-clean",
+                    ),
+                    html.Button(
+                        "Reset points",
+                        id={"type": "spline-reset", "index": idx, "chart": chart_type},
+                        n_clicks=0,
+                        className="btn-auto-clean",
+                        title="Rebuild 6 points from the visible test data",
+                    ),
+                ]),
             ]),
         ]),
     ])

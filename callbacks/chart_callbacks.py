@@ -358,32 +358,40 @@ def build_knots_for_group(
 clientside_callback(
     """
     function(fig) {
-        if (window.__knotCommitV5) return window.dash_clientside.no_update;
-        window.__knotCommitV5 = true;
+        if (window.__knotCommitV6) return window.dash_clientside.no_update;
+        window.__knotCommitV6 = true;
         function plotNode() {
             var root = document.getElementById("main-chart");
             if (!root) return null;
             if (root.classList && root.classList.contains("js-plotly-plot")) return root;
             return root.querySelector(".js-plotly-plot");
         }
+        function axisById(gd, id) {
+            var layout = gd._fullLayout;
+            if (!layout) return null;
+            id = id || "x";
+            if (layout[id] && layout[id].p2d) return layout[id];
+            var prefix = id.charAt(0) === "y" ? "yaxis" : "xaxis";
+            return layout[id.length > 1 ? prefix + id.slice(1) : prefix] || null;
+        }
+        function liveShapes(gd) {
+            return (gd._fullLayout && gd._fullLayout.shapes) || (gd.layout && gd.layout.shapes) || [];
+        }
         function centers(gd) {
-            var shapes = (gd.layout && gd.layout.shapes) || [];
+            var shapes = liveShapes(gd);
             var out = [];
             for (var i = 0; i < shapes.length; i++) {
                 var s = shapes[i];
                 if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
-                out.push({
-                    name: s.name,
-                    flow: (+s.x0 + +s.x1) / 2,
-                    y: (+s.y0 + +s.y1) / 2
-                });
+                out.push({name: s.name, flow: (+s.x0 + +s.x1) / 2, y: (+s.y0 + +s.y1) / 2});
             }
             return out;
         }
-        function commit(gd) {
-            var pts = centers(gd);
-            if (!pts.length || !window.dash_clientside) return;
-            var parts = String(pts[0].name).split("|");
+        function commit(gd, pts) {
+            pts = pts || centers(gd);
+            if (!pts.length || !window.dash_clientside || !window.dash_clientside.set_props) return;
+            pts.sort(function(a, b) { return a.flow - b.flow; });
+            var parts = String(pts[0].name || "").split("|");
             window.dash_clientside.set_props("knot-drag-store", {
                 data: {chart: parts[1], group: parts[2], knots: pts, t: Date.now()}
             });
@@ -394,33 +402,56 @@ clientside_callback(
             if (!gd) return;
             var bb = gd.getBoundingClientRect();
             if (evt.clientX < bb.left || evt.clientX > bb.right ||
-                evt.clientY < bb.top || evt.clientY > bb.bottom) return;
+                evt.clientY < bb.top || evt.clientY > bb.bottom) {
+                before = null;
+                return;
+            }
             before = centers(gd);
         }, true);
         document.addEventListener("pointerup", function () {
             var gd = plotNode();
-            if (!gd || !before) return;
-            var after = centers(gd);
-            var changed = JSON.stringify(after) !== JSON.stringify(before);
+            var snap = before;
             before = null;
-            if (changed && after.length) commit(gd);
+            if (!gd || !snap) return;
+            setTimeout(function () {
+                var after = centers(gd);
+                if (after.length && JSON.stringify(after) !== JSON.stringify(snap)) commit(gd, after);
+            }, 40);
+        }, true);
+        document.addEventListener("dblclick", function (evt) {
+            var gd = plotNode();
+            if (!gd) return;
+            var bb = gd.getBoundingClientRect();
+            if (evt.clientX < bb.left || evt.clientX > bb.right ||
+                evt.clientY < bb.top || evt.clientY > bb.bottom) return;
+            var xa = axisById(gd, "x");
+            var ya = axisById(gd, "y");
+            if (!xa || !ya) return;
+            var flow = xa.p2d(evt.clientX - bb.left - xa._offset);
+            var y = ya.p2d(evt.clientY - bb.top - ya._offset);
+            var pts = centers(gd);
+            if (!pts.length || !isFinite(flow) || !isFinite(y)) return;
+            pts.push({name: pts[0].name, flow: flow, y: y});
+            commit(gd, pts);
+            evt.preventDefault();
         }, true);
         document.addEventListener("keydown", function (evt) {
-            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(evt.key) < 0) return;
             var tag = (evt.target && evt.target.tagName) || "";
             if (tag === "INPUT" || tag === "TEXTAREA") return;
             var gd = plotNode();
-            if (!gd || !gd.layout || !gd.layout.shapes) return;
-            var shapes = gd.layout.shapes;
-            var idx = gd.__knotIndex || 0;
-            var found = -1;
-            var seen = 0;
-            for (var i = 0; i < shapes.length; i++) {
-                if (String(shapes[i].name || "").indexOf("spline-knot|") !== 0) continue;
-                if (seen === idx) { found = i; break; }
-                seen++;
+            if (!gd) return;
+            var pts = centers(gd);
+            if (!pts.length) return;
+            if (evt.key === "Delete" || evt.key === "Backspace") {
+                if (pts.length <= 3) return;
+                var idx = gd.__knotIndex || 0;
+                if (idx >= pts.length) idx = pts.length - 1;
+                pts.splice(idx, 1);
+                commit(gd, pts);
+                evt.preventDefault();
+                return;
             }
-            if (found < 0) return;
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(evt.key) < 0) return;
             var step = evt.shiftKey ? 0.004 : 0.02;
             var xa = gd._fullLayout.xaxis;
             var ya = gd._fullLayout.yaxis;
@@ -428,18 +459,12 @@ clientside_callback(
             var dy = (ya.range[1] - ya.range[0]) * step;
             if (evt.key === "ArrowLeft") dx = -dx; else if (evt.key !== "ArrowRight") dx = 0;
             if (evt.key === "ArrowDown") dy = -dy; else if (evt.key !== "ArrowUp") dy = 0;
-            var s = shapes[found];
-            window.Plotly.relayout(gd, (function () {
-                var u = {};
-                u["shapes[" + found + "].x0"] = +s.x0 + dx;
-                u["shapes[" + found + "].x1"] = +s.x1 + dx;
-                u["shapes[" + found + "].y0"] = +s.y0 + dy;
-                u["shapes[" + found + "].y1"] = +s.y1 + dy;
-                return u;
-            })());
-            gd.__knotIndex = idx;
+            var idx = gd.__knotIndex || 0;
+            if (idx >= pts.length) idx = 0;
+            pts[idx].flow += dx;
+            pts[idx].y += dy;
+            commit(gd, pts);
             evt.preventDefault();
-            commit(gd);
         });
         return window.dash_clientside.no_update;
     }
@@ -522,6 +547,63 @@ def reset_spline_knots(n_clicks, store):
     State("unit-toggle", "value"),
     prevent_initial_call=True,
 )
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input({"type": "spline-add", "index": ALL, "chart": ALL}, "n_clicks"),
+    State("shape-settings", "data"),
+    prevent_initial_call=True,
+)
+def add_spline_knot(n_clicks, store):
+    if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
+        raise PreventUpdate
+    if not any(n for n in (n_clicks or []) if n):
+        raise PreventUpdate
+    triggered = ctx.triggered_id
+    group_key = str(triggered.get("index"))
+    chart = str(triggered.get("chart") or "head")
+    store = store or {"head": {}, "power": {}, "active": chart}
+    store.setdefault(chart, {})
+    store[chart].setdefault(group_key, {})
+    knots = [dict(k) for k in (store[chart][group_key].get("knots") or []) if isinstance(k, dict)]
+    knots = [k for k in knots if k.get("y") is not None]
+    if len(knots) < 2:
+        raise PreventUpdate
+    knots.sort(key=lambda k: float(k["flow"]))
+    mid = len(knots) // 2
+    flow = (float(knots[mid - 1]["flow"]) + float(knots[mid]["flow"])) / 2
+    y = (float(knots[mid - 1]["y"]) + float(knots[mid]["y"])) / 2
+    knots.append({"flow": flow, "y": y})
+    store[chart][group_key]["knots"] = knots
+    store[chart][group_key]["spline_on"] = True
+    return store
+
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input({"type": "spline-delete", "index": ALL, "chart": ALL}, "n_clicks"),
+    State("shape-settings", "data"),
+    prevent_initial_call=True,
+)
+def delete_spline_knot(n_clicks, store):
+    if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
+        raise PreventUpdate
+    if not any(n for n in (n_clicks or []) if n):
+        raise PreventUpdate
+    triggered = ctx.triggered_id
+    group_key = str(triggered.get("index"))
+    chart = str(triggered.get("chart") or "head")
+    store = store or {"head": {}, "power": {}, "active": chart}
+    knots = [dict(k) for k in ((store.get(chart) or {}).get(group_key) or {}).get("knots") or [] if isinstance(k, dict)]
+    knots = [k for k in knots if k.get("y") is not None]
+    if len(knots) <= 3:
+        raise PreventUpdate
+    knots.sort(key=lambda k: float(k["flow"]))
+    del knots[len(knots) // 2]
+    store[chart][group_key]["knots"] = knots
+    store[chart][group_key]["spline_on"] = True
+    return store
+
+
 def ensure_spline_knots(store, comp_data, px_data, fit_settings,
                         test_vis, added_trims, units):
     """Place 25 knots along a generated spline the first time spline mode is on."""
