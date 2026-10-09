@@ -538,17 +538,6 @@ def reset_spline_knots(n_clicks, store):
 
 @callback(
     Output("shape-settings", "data", allow_duplicate=True),
-    Input("shape-settings", "data"),
-    State("comparison-results", "data"),
-    State("px-data", "data"),
-    State("fit-settings", "data"),
-    State("test-visibility", "data"),
-    State("added-trims", "data"),
-    State("unit-toggle", "value"),
-    prevent_initial_call=True,
-)
-@callback(
-    Output("shape-settings", "data", allow_duplicate=True),
     Input({"type": "spline-add", "index": ALL, "chart": ALL}, "n_clicks"),
     State("shape-settings", "data"),
     prevent_initial_call=True,
@@ -604,6 +593,17 @@ def delete_spline_knot(n_clicks, store):
     return store
 
 
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input("shape-settings", "data"),
+    State("comparison-results", "data"),
+    State("px-data", "data"),
+    State("fit-settings", "data"),
+    State("test-visibility", "data"),
+    State("added-trims", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
 def ensure_spline_knots(store, comp_data, px_data, fit_settings,
                         test_vis, added_trims, units):
     """Place 25 knots along a generated spline the first time spline mode is on."""
