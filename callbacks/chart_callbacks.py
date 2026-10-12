@@ -440,6 +440,75 @@ clientside_callback(
 )
 
 
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input("main-chart", "relayoutData"),
+    State("main-chart", "figure"),
+    State("shape-settings", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def apply_shape_drag(relayout, figure, store, units):
+    """Save a Plotly shape drag. Zoom and pan relayouts are ignored."""
+    if not isinstance(relayout, dict) or not figure:
+        raise PreventUpdate
+    shapes = list(((figure.get("layout") or {}).get("shapes")) or [])
+    if isinstance(relayout.get("shapes"), list):
+        shapes = [dict(s) for s in relayout["shapes"]]
+    moved = {}
+    for key, value in relayout.items():
+        if not isinstance(key, str) or not key.startswith("shapes["):
+            continue
+        try:
+            index = int(key.split("[", 1)[1].split("]", 1)[0])
+            prop = key.split(".", 1)[1]
+        except (IndexError, ValueError):
+            continue
+        moved.setdefault(index, {})[prop] = value
+    if not moved and not isinstance(relayout.get("shapes"), list):
+        raise PreventUpdate
+
+    updates = {}
+    indexes = list(moved) if moved else list(range(len(shapes)))
+    for index in indexes:
+        if index >= len(shapes):
+            continue
+        shape = dict(shapes[index] or {})
+        shape.update(moved.get(index, {}))
+        parts = str(shape.get("name") or "").split("|")
+        if len(parts) != 4 or parts[0] != "spline-knot":
+            continue
+        _, chart, group_key, point = parts
+        try:
+            flow = (float(shape["x0"]) + float(shape["x1"])) / 2.0
+            value = (float(shape["y0"]) + float(shape["y1"])) / 2.0
+            point = int(point)
+        except (KeyError, TypeError, ValueError):
+            continue
+        if chart == "head" and units == "psi":
+            value = value / FEET_TO_PSI
+        updates.setdefault((chart, group_key), {})[point] = {"flow": flow, "y": value}
+    if not updates:
+        raise PreventUpdate
+
+    store = store or {"head": {}, "power": {}, "active": "head"}
+    for (chart, group_key), points in updates.items():
+        store.setdefault(chart, {})
+        store[chart].setdefault(group_key, {})
+        knots = [
+            dict(k) for k in (store[chart][group_key].get("knots") or [])
+            if isinstance(k, dict) and k.get("y") is not None
+        ]
+        for point, knot in points.items():
+            if 0 <= point < len(knots):
+                knots[point] = knot
+        store[chart][group_key]["knots"] = knots
+        store[chart][group_key]["spline_on"] = True
+        store[chart][group_key]["regenerate_knots"] = False
+    return store
+
+
 def apply_dragged_knots(payload, store, units):
     """Write chart-dragged knot positions back into shape settings."""
     if not isinstance(payload, dict):
@@ -2139,26 +2208,21 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
     rx = max(rx, x_span * 0.004)
     ry = max(ry, y_span * 0.006)
     for i, (flow, value) in enumerate(zip(flows, values)):
-        knot_id = f"spline-knot|{chart_type}|{group_index}|{i}"
-        try:
-            fig.add_shape(
-                type="circle",
-                xref="x",
-                yref="y",
-                x0=float(flow) - rx,
-                x1=float(flow) + rx,
-                y0=float(value) - ry,
-                y1=float(value) + ry,
-                line=dict(color=color, width=1),
-                fillcolor=color,
-                opacity=0.55,
-                layer="above",
-                editable=True,
-                name=knot_id,
-                label=dict(text=knot_id, font=dict(size=1, color="rgba(0,0,0,0)")),
-            )
-        except Exception:
-            pass
+        fig.add_shape(
+            type="circle",
+            xref="x",
+            yref="y",
+            x0=float(flow) - rx,
+            x1=float(flow) + rx,
+            y0=float(value) - ry,
+            y1=float(value) + ry,
+            line=dict(color=color, width=1),
+            fillcolor=color,
+            opacity=0.55,
+            layer="above",
+            editable=True,
+            name=f"spline-knot|{chart_type}|{group_index}|{i}",
+        )
 
 
 def _visible_points_for_knots(group_index, chart, groups, test_vis,
