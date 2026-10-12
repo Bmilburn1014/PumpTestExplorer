@@ -449,6 +449,24 @@ clientside_callback(
     State("unit-toggle", "value"),
     prevent_initial_call=True,
 )
+
+def _sorted_knots(knots):
+    """Keep stored knots in the same flow order as the drawn handles."""
+    clean = []
+    for knot in knots or []:
+        if not isinstance(knot, dict) or knot.get("y") is None:
+            continue
+        try:
+            flow = float(knot["flow"])
+            y = float(knot["y"])
+        except (TypeError, ValueError):
+            continue
+        if np.isfinite(flow) and np.isfinite(y):
+            clean.append({"flow": flow, "y": y})
+    clean.sort(key=lambda knot: knot["flow"])
+    return clean
+
+
 def apply_shape_drag(relayout, figure, store, units):
     """Save a Plotly shape drag. Zoom and pan relayouts are ignored."""
     if not isinstance(relayout, dict) or not figure:
@@ -496,14 +514,11 @@ def apply_shape_drag(relayout, figure, store, units):
     for (chart, group_key), points in updates.items():
         store.setdefault(chart, {})
         store[chart].setdefault(group_key, {})
-        knots = [
-            dict(k) for k in (store[chart][group_key].get("knots") or [])
-            if isinstance(k, dict) and k.get("y") is not None
-        ]
+        knots = _sorted_knots(store[chart][group_key].get("knots"))
         for point, knot in points.items():
             if 0 <= point < len(knots):
                 knots[point] = knot
-        store[chart][group_key]["knots"] = knots
+        store[chart][group_key]["knots"] = _sorted_knots(knots)
         store[chart][group_key]["spline_on"] = True
         store[chart][group_key]["regenerate_knots"] = False
     return store
@@ -654,12 +669,9 @@ def place_clicked_knot(payload, store, units):
     store = store or {"head": {}, "power": {}, "active": chart}
     store.setdefault(chart, {})
     store[chart].setdefault(group_key, {})
-    knots = [
-        dict(k) for k in (store[chart][group_key].get("knots") or [])
-        if isinstance(k, dict) and k.get("y") is not None
-    ]
+    knots = _sorted_knots(store[chart][group_key].get("knots"))
     knots.append({"flow": flow, "y": y})
-    store[chart][group_key]["knots"] = knots
+    store[chart][group_key]["knots"] = _sorted_knots(knots)
     store[chart][group_key]["spline_on"] = True
     store[chart][group_key]["regenerate_knots"] = False
     return store, {"armed": False}
@@ -690,11 +702,9 @@ def delete_spline_knot(n_clicks, store):
     group_key = str(triggered.get("index"))
     chart = str(triggered.get("chart") or "head")
     store = store or {"head": {}, "power": {}, "active": chart}
-    knots = [dict(k) for k in ((store.get(chart) or {}).get(group_key) or {}).get("knots") or [] if isinstance(k, dict)]
-    knots = [k for k in knots if k.get("y") is not None]
+    knots = _sorted_knots(((store.get(chart) or {}).get(group_key) or {}).get("knots"))
     if len(knots) <= 3:
         raise PreventUpdate
-    knots.sort(key=lambda k: float(k["flow"]))
     del knots[len(knots) // 2]
     store[chart][group_key]["knots"] = knots
     store[chart][group_key]["spline_on"] = True
