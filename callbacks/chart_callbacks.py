@@ -358,43 +358,56 @@ def build_knots_for_group(
 clientside_callback(
     """
     function(fig) {
-        if (window.__knotCommitV6) return window.dash_clientside.no_update;
-        window.__knotCommitV6 = true;
+        if (window.__knotCommitV7) return window.dash_clientside.no_update;
+        window.__knotCommitV7 = true;
         function plotNode() {
             var root = document.getElementById("main-chart");
             if (!root) return null;
             if (root.classList && root.classList.contains("js-plotly-plot")) return root;
             return root.querySelector(".js-plotly-plot");
         }
-        function axisById(gd, id) {
-            var layout = gd._fullLayout;
-            if (!layout) return null;
-            id = id || "x";
-            if (layout[id] && layout[id].p2d) return layout[id];
-            var prefix = id.charAt(0) === "y" ? "yaxis" : "xaxis";
-            return layout[id.length > 1 ? prefix + id.slice(1) : prefix] || null;
-        }
         function liveShapes(gd) {
-            return (gd._fullLayout && gd._fullLayout.shapes) || (gd.layout && gd.layout.shapes) || [];
+            var a = (gd._fullLayout && gd._fullLayout.shapes) || [];
+            var b = (gd.layout && gd.layout.shapes) || [];
+            return a.length >= b.length ? a : b;
+        }
+        function shapeId(s) {
+            if (!s) return "";
+            if (s.label && s.label.text && String(s.label.text).indexOf("spline-knot|") === 0) return s.label.text;
+            if (s.name && String(s.name).indexOf("spline-knot|") === 0) return s.name;
+            return "";
         }
         function centers(gd) {
             var shapes = liveShapes(gd);
             var out = [];
             for (var i = 0; i < shapes.length; i++) {
                 var s = shapes[i];
-                if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
-                out.push({name: s.name, flow: (+s.x0 + +s.x1) / 2, y: (+s.y0 + +s.y1) / 2});
+                var id = shapeId(s);
+                if (!id) continue;
+                out.push({name: id, flow: (+s.x0 + +s.x1) / 2, y: (+s.y0 + +s.y1) / 2});
             }
             return out;
         }
         function commit(gd, pts) {
             pts = pts || centers(gd);
             if (!pts.length || !window.dash_clientside || !window.dash_clientside.set_props) return;
-            pts.sort(function(a, b) { return a.flow - b.flow; });
-            var parts = String(pts[0].name || "").split("|");
-            window.dash_clientside.set_props("knot-drag-store", {
-                data: {chart: parts[1], group: parts[2], knots: pts, t: Date.now()}
-            });
+            // Group by chart|group so multi-group charts commit the moved group.
+            var groups = {};
+            for (var i = 0; i < pts.length; i++) {
+                var parts = String(pts[i].name).split("|");
+                var key = parts[1] + "|" + parts[2];
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(pts[i]);
+            }
+            var keys = Object.keys(groups);
+            for (var k = 0; k < keys.length; k++) {
+                var gpts = groups[keys[k]];
+                gpts.sort(function(a, b) { return a.flow - b.flow; });
+                var parts = keys[k].split("|");
+                window.dash_clientside.set_props("knot-drag-store", {
+                    data: {chart: parts[0], group: parts[1], knots: gpts, t: Date.now()}
+                });
+            }
         }
         var before = null;
         document.addEventListener("pointerdown", function (evt) {
@@ -406,7 +419,7 @@ clientside_callback(
                 before = null;
                 return;
             }
-            before = centers(gd);
+            before = JSON.stringify(centers(gd));
         }, true);
         document.addEventListener("pointerup", function () {
             var gd = plotNode();
@@ -415,57 +428,9 @@ clientside_callback(
             if (!gd || !snap) return;
             setTimeout(function () {
                 var after = centers(gd);
-                if (after.length && JSON.stringify(after) !== JSON.stringify(snap)) commit(gd, after);
-            }, 40);
+                if (after.length && JSON.stringify(after) !== snap) commit(gd, after);
+            }, 80);
         }, true);
-        document.addEventListener("dblclick", function (evt) {
-            var gd = plotNode();
-            if (!gd) return;
-            var bb = gd.getBoundingClientRect();
-            if (evt.clientX < bb.left || evt.clientX > bb.right ||
-                evt.clientY < bb.top || evt.clientY > bb.bottom) return;
-            var xa = axisById(gd, "x");
-            var ya = axisById(gd, "y");
-            if (!xa || !ya) return;
-            var flow = xa.p2d(evt.clientX - bb.left - xa._offset);
-            var y = ya.p2d(evt.clientY - bb.top - ya._offset);
-            var pts = centers(gd);
-            if (!pts.length || !isFinite(flow) || !isFinite(y)) return;
-            pts.push({name: pts[0].name, flow: flow, y: y});
-            commit(gd, pts);
-            evt.preventDefault();
-        }, true);
-        document.addEventListener("keydown", function (evt) {
-            var tag = (evt.target && evt.target.tagName) || "";
-            if (tag === "INPUT" || tag === "TEXTAREA") return;
-            var gd = plotNode();
-            if (!gd) return;
-            var pts = centers(gd);
-            if (!pts.length) return;
-            if (evt.key === "Delete" || evt.key === "Backspace") {
-                if (pts.length <= 3) return;
-                var idx = gd.__knotIndex || 0;
-                if (idx >= pts.length) idx = pts.length - 1;
-                pts.splice(idx, 1);
-                commit(gd, pts);
-                evt.preventDefault();
-                return;
-            }
-            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(evt.key) < 0) return;
-            var step = evt.shiftKey ? 0.004 : 0.02;
-            var xa = gd._fullLayout.xaxis;
-            var ya = gd._fullLayout.yaxis;
-            var dx = (xa.range[1] - xa.range[0]) * step;
-            var dy = (ya.range[1] - ya.range[0]) * step;
-            if (evt.key === "ArrowLeft") dx = -dx; else if (evt.key !== "ArrowRight") dx = 0;
-            if (evt.key === "ArrowDown") dy = -dy; else if (evt.key !== "ArrowUp") dy = 0;
-            var idx = gd.__knotIndex || 0;
-            if (idx >= pts.length) idx = 0;
-            pts[idx].flow += dx;
-            pts[idx].y += dy;
-            commit(gd, pts);
-            evt.preventDefault();
-        });
         return window.dash_clientside.no_update;
     }
     """,
@@ -2159,16 +2124,22 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
             line=dict(width=2, color="#111111"),
         ),
         hovertemplate=(
-            "Drag the ring<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
+            "Drag point<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
         ),
         showlegend=False,
         legendgroup=f"grp_{group_index}",
     ))
-    x_span = max(float(flows.max() - flows.min()), 1.0)
-    y_span = max(float(values.max() - values.min()), 1.0)
-    rx = x_span * 0.018
-    ry = y_span * 0.035
+    # Size the editable circle to the same pixel diameter as the marker
+    # so the drag handle looks like a shaded copy of the point.
+    x_span = max(float(np.ptp(flows)), 1.0)
+    y_span = max(float(np.ptp(values)), 1.0)
+    # Assume a typical plot area; 16px marker on ~700x450 plot.
+    rx = x_span / 700.0 * 8.0
+    ry = y_span / 450.0 * 8.0
+    rx = max(rx, x_span * 0.004)
+    ry = max(ry, y_span * 0.006)
     for i, (flow, value) in enumerate(zip(flows, values)):
+        knot_id = f"spline-knot|{chart_type}|{group_index}|{i}"
         try:
             fig.add_shape(
                 type="circle",
@@ -2178,12 +2149,13 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
                 x1=float(flow) + rx,
                 y0=float(value) - ry,
                 y1=float(value) + ry,
-                line=dict(color="#111111", width=2),
+                line=dict(color=color, width=1),
                 fillcolor=color,
-                opacity=0.85,
+                opacity=0.55,
                 layer="above",
                 editable=True,
-                name=f"spline-knot|{chart_type}|{group_index}|{i}",
+                name=knot_id,
+                label=dict(text=knot_id, font=dict(size=1, color="rgba(0,0,0,0)")),
             )
         except Exception:
             pass
