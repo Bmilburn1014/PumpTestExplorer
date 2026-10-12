@@ -571,34 +571,108 @@ def reset_spline_knots(n_clicks, store):
 
 
 @callback(
-    Output("shape-settings", "data", allow_duplicate=True),
+    Output("knot-add-mode", "data"),
     Input({"type": "spline-add", "index": ALL, "chart": ALL}, "n_clicks"),
-    State("shape-settings", "data"),
     prevent_initial_call=True,
 )
-def add_spline_knot(n_clicks, store):
+def arm_spline_add(n_clicks):
+    """Arm click-to-place. The next chart click adds the knot."""
     if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
     if not any(n for n in (n_clicks or []) if n):
         raise PreventUpdate
     triggered = ctx.triggered_id
-    group_key = str(triggered.get("index"))
-    chart = str(triggered.get("chart") or "head")
+    return {
+        "armed": True,
+        "chart": str(triggered.get("chart") or "head"),
+        "group": str(triggered.get("index")),
+    }
+
+
+clientside_callback(
+    """
+    function(mode) {
+        if (!mode || !mode.armed) return window.dash_clientside.no_update;
+        var root = document.getElementById("main-chart");
+        var gd = root && (root.classList.contains("js-plotly-plot")
+            ? root : root.querySelector(".js-plotly-plot"));
+        if (!gd || !gd._fullLayout) return window.dash_clientside.no_update;
+        function onClick(evt) {
+            document.removeEventListener("click", onClick, true);
+            var bb = gd.getBoundingClientRect();
+            if (evt.clientX < bb.left || evt.clientX > bb.right ||
+                evt.clientY < bb.top || evt.clientY > bb.bottom) {
+                window.dash_clientside.set_props("knot-add-mode", {data: {armed: false}});
+                return;
+            }
+            var xa = gd._fullLayout.xaxis;
+            var ya = gd._fullLayout.yaxis;
+            if (!xa || !ya || !xa.p2d || !ya.p2d) return;
+            var flow = xa.p2d(evt.clientX - bb.left - xa._offset);
+            var y = ya.p2d(evt.clientY - bb.top - ya._offset);
+            if (!isFinite(flow) || !isFinite(y)) return;
+            window.dash_clientside.set_props("knot-place-store", {
+                data: {chart: mode.chart, group: mode.group, flow: flow, y: y, t: Date.now()}
+            });
+        }
+        setTimeout(function () {
+            document.addEventListener("click", onClick, true);
+        }, 0);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("knot-place-store", "data", allow_duplicate=True),
+    Input("knot-add-mode", "data"),
+    prevent_initial_call=True,
+)
+
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Output("knot-add-mode", "data", allow_duplicate=True),
+    Input("knot-place-store", "data"),
+    State("shape-settings", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def place_clicked_knot(payload, store, units):
+    if not isinstance(payload, dict):
+        raise PreventUpdate
+    chart = str(payload.get("chart") or "")
+    group_key = str(payload.get("group") or "")
+    try:
+        flow = float(payload.get("flow"))
+        y = float(payload.get("y"))
+    except (TypeError, ValueError):
+        raise PreventUpdate
+    if chart not in ("head", "power", "efficiency") or not group_key:
+        raise PreventUpdate
+    if not (np.isfinite(flow) and np.isfinite(y)):
+        raise PreventUpdate
+    if chart == "head" and units == "psi":
+        y = y / FEET_TO_PSI
     store = store or {"head": {}, "power": {}, "active": chart}
     store.setdefault(chart, {})
     store[chart].setdefault(group_key, {})
-    knots = [dict(k) for k in (store[chart][group_key].get("knots") or []) if isinstance(k, dict)]
-    knots = [k for k in knots if k.get("y") is not None]
-    if len(knots) < 2:
-        raise PreventUpdate
-    knots.sort(key=lambda k: float(k["flow"]))
-    mid = len(knots) // 2
-    flow = (float(knots[mid - 1]["flow"]) + float(knots[mid]["flow"])) / 2
-    y = (float(knots[mid - 1]["y"]) + float(knots[mid]["y"])) / 2
+    knots = [
+        dict(k) for k in (store[chart][group_key].get("knots") or [])
+        if isinstance(k, dict) and k.get("y") is not None
+    ]
     knots.append({"flow": flow, "y": y})
     store[chart][group_key]["knots"] = knots
     store[chart][group_key]["spline_on"] = True
-    return store
+    store[chart][group_key]["regenerate_knots"] = False
+    return store, {"armed": False}
+
+
+@callback(
+    Output("knot-add-hint", "children"),
+    Input("knot-add-mode", "data"),
+)
+def show_knot_add_hint(mode):
+    if isinstance(mode, dict) and mode.get("armed"):
+        return "Click the chart to place the point. Click outside the chart to cancel."
+    return ""
 
 
 @callback(

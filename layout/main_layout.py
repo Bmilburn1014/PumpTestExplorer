@@ -34,6 +34,8 @@ def build_layout():
             dcc.Store(id="test-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="shape-settings", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="knot-drag-store", data=None),
+            dcc.Store(id="knot-add-mode", data={"armed": False}),
+            dcc.Store(id="knot-place-store", data=None),
             dcc.Store(id="added-trims", data=[]),
             dcc.Store(id="group-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
 
@@ -765,13 +767,13 @@ def _build_shape_section(idx, chart_type, ss=None):
                     ),
                 ]),
                 html.Div(
-                    "Double-click the chart to add a point. "
-                    "Delete removes the selected point. "
-                    "Drag a ring; the curve updates when you release. "
+                    "Add point, then click the chart where the point should go. "
+                    "Drag a point to move it. Points cannot be resized. "
                     "Point fit Tight holds a dip. Loose is a smoother cubic and can overshoot.",
                     className="hint-text",
                 ),
                 html.Div(className="fit-row", children=[
+                    html.Div(id="knot-add-hint", className="hint-text"),
                     html.Button(
                         "Add point",
                         id={"type": "spline-add", "index": idx, "chart": chart_type},

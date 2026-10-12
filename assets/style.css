@@ -422,3 +422,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .stat-good      { background: #ffc107; color: #333; }
 .stat-fair      { background: #fd7e14; color: #fff; }
 .stat-poor      { background: #dc3545; color: #fff; }
+
+
+/* Spline knot handles move only. Hide Plotly shape resize grips. */
+.js-plotly-plot .outline-controllers,
+.js-plotly-plot .select-outline .cursor-pointer {
+    display: none !important;
+}
