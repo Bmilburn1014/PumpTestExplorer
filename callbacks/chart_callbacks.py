@@ -441,15 +441,6 @@ clientside_callback(
 
 
 
-@callback(
-    Output("shape-settings", "data", allow_duplicate=True),
-    Input("main-chart", "relayoutData"),
-    State("main-chart", "figure"),
-    State("shape-settings", "data"),
-    State("unit-toggle", "value"),
-    prevent_initial_call=True,
-)
-
 def _sorted_knots(knots):
     """Keep stored knots in the same flow order as the drawn handles."""
     clean = []
@@ -466,6 +457,16 @@ def _sorted_knots(knots):
     clean.sort(key=lambda knot: knot["flow"])
     return clean
 
+
+
+@callback(
+    Output("shape-settings", "data", allow_duplicate=True),
+    Input("main-chart", "relayoutData"),
+    State("main-chart", "figure"),
+    State("shape-settings", "data"),
+    State("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
 
 def apply_shape_drag(relayout, figure, store, units):
     """Save a Plotly shape drag. Zoom and pan relayouts are ignored."""
