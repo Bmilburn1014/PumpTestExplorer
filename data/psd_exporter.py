@@ -536,124 +536,82 @@ def _do_fit(fit_f, fit_y, poly_order, max_fit,
 
 
 
-def _fit_absolute_knots(knots, smoothing=0.3):
-    """Spline through dragged knot positions. Matches chart_callbacks."""
-    pts = []
-    for knot in knots or []:
-        try:
-            pts.append((float(knot["flow"]), float(knot["y"])))
-        except (KeyError, TypeError, ValueError):
-            continue
-    pts.sort(key=lambda item: item[0])
-    xs, ys = [], []
-    for flow, value in pts:
-        if not (np.isfinite(flow) and np.isfinite(value)):
-            continue
-        if xs and abs(flow - xs[-1]) < 1e-6:
-            ys[-1] = (ys[-1] + value) / 2.0
-            continue
-        xs.append(flow)
-        ys.append(value)
+def _interpolate_controls(xs, ys, smoothing=0.3, n_out=200):
+    order = np.argsort(np.asarray(xs, dtype=float))
+    xs = np.asarray(xs, dtype=float)[order]
+    ys = np.asarray(ys, dtype=float)[order]
+    valid = np.isfinite(xs) & np.isfinite(ys)
+    xs, ys = xs[valid], ys[valid]
     if len(xs) < 2:
-        return np.array([]), np.array([])
-    xs = np.asarray(xs, dtype=float)
-    ys = np.asarray(ys, dtype=float)
-    x_fit = np.linspace(xs.min(), xs.max(), 200)
-    if len(xs) < 4:
+        return None, None
+    keep_x, keep_y = [xs[0]], [ys[0]]
+    for xv, yv in zip(xs[1:], ys[1:]):
+        if abs(xv - keep_x[-1]) < 1e-6:
+            keep_y[-1] = (keep_y[-1] + yv) / 2.0
+            continue
+        keep_x.append(xv)
+        keep_y.append(yv)
+    xs = np.asarray(keep_x, dtype=float)
+    ys = np.asarray(keep_y, dtype=float)
+    x_fit = np.linspace(float(xs.min()), float(xs.max()), n_out)
+    if len(xs) < 3:
         return x_fit, np.interp(x_fit, xs, ys)
-    smooth = max(0.0, float(smoothing or 0))
     try:
-        if smooth <= 0.15:
+        if float(smoothing or 0) < 0.5:
             from scipy.interpolate import PchipInterpolator
             return x_fit, PchipInterpolator(xs, ys)(x_fit)
-        from scipy.interpolate import UnivariateSpline
-        variance = float(np.var(ys)) or 1.0
-        s_param = smooth * len(xs) * variance * 0.5
-        spline = UnivariateSpline(xs, ys, s=s_param, k=3)
-        return x_fit, spline(x_fit)
+        from scipy.interpolate import CubicSpline
+        return x_fit, CubicSpline(xs, ys, bc_type="natural")(x_fit)
     except Exception:
         return x_fit, np.interp(x_fit, xs, ys)
+
+
+def _fit_absolute_knots(knots, smoothing=0.3):
+    flows, values = [], []
+    for knot in knots or []:
+        if not isinstance(knot, dict) or knot.get("y") is None:
+            continue
+        try:
+            flows.append(float(knot["flow"]))
+            values.append(float(knot["y"]))
+        except (TypeError, ValueError):
+            continue
+    return _interpolate_controls(flows, values, smoothing)
 
 
 def _fit_piecewise_spline(flow, y, knot_flows, knot_nudges,
-                          smoothing=0.3):
-    """Spline fit with knot control — copied from chart_callbacks."""
-    idx = np.argsort(flow)
-    flow_s = flow[idx]
-    y_s = y[idx]
-    flow_min, flow_max = flow_s.min(), flow_s.max()
-    flow_range = flow_max - flow_min
-
-    if flow_range <= 0 or len(flow_s) < 3:
-        return flow_s, y_s
-
-    n_bins = max(12, len(flow_s) // 8)
-    bin_edges = np.linspace(flow_min, flow_max, n_bins + 1)
-
-    rep_x, rep_y, rep_w = [], [], []
-    for bi in range(n_bins):
-        lo, hi = bin_edges[bi], bin_edges[bi + 1]
-        mask = ((flow_s >= lo) & (flow_s <= hi) if bi == n_bins - 1
-                else (flow_s >= lo) & (flow_s < hi))
-        seg = y_s[mask]
-        seg_x = flow_s[mask]
-        if len(seg) == 0:
+                          smoothing=0.3, n_knots=6):
+    xs = np.asarray(flow, dtype=float)
+    ys = np.asarray(y, dtype=float)
+    valid = np.isfinite(xs) & np.isfinite(ys)
+    xs, ys = xs[valid], ys[valid]
+    if len(xs) < 2:
+        return xs, ys
+    order = np.argsort(xs)
+    xs, ys = xs[order], ys[order]
+    count = max(3, min(int(n_knots or 6), len(xs)))
+    edges = np.linspace(xs.min(), xs.max(), count + 1)
+    rep_x, rep_y = [], []
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        mask = (xs >= lo) & (xs <= hi if hi == edges[-1] else xs < hi)
+        if not np.any(mask):
             continue
-        rep_x.append(np.median(seg_x))
-        rep_y.append(np.median(seg))
-        rep_w.append(np.sqrt(len(seg)))
-
-    if len(rep_x) < 4:
-        coeffs = np.polyfit(flow_s, y_s, min(3, len(flow_s) - 1))
-        x_fit = np.linspace(flow_min, flow_max, 200)
-        return x_fit, np.polyval(coeffs, x_fit)
-
-    rep_x = np.array(rep_x)
-    rep_y = np.array(rep_y)
-    rep_w = np.array(rep_w)
-
-    for kf, kn in zip(knot_flows, knot_nudges):
-        if kf < flow_min or kf > flow_max:
+        rep_x.append(float(np.median(xs[mask])))
+        rep_y.append(float(np.median(ys[mask])))
+    if len(rep_x) < 2:
+        return _interpolate_controls(xs, ys, smoothing)
+    rep_x = np.asarray(rep_x, dtype=float)
+    rep_y = np.asarray(rep_y, dtype=float)
+    for kf, kn in zip(knot_flows or [], knot_nudges or []):
+        try:
+            kf, kn = float(kf), float(kn)
+        except (TypeError, ValueError):
             continue
-        radius = max(flow_range * 0.05, 1.0)
-        nearby = np.abs(flow_s - kf) <= radius
-        local_y = (np.median(y_s[nearby]) if nearby.sum() > 0
-                   else np.interp(kf, rep_x, rep_y))
-        rep_x = np.append(rep_x, kf)
-        rep_y = np.append(rep_y, local_y * (1 + kn / 100))
-        rep_w = np.append(rep_w, rep_w.max() * 5)
-
-    sort_idx = np.argsort(rep_x)
-    rep_x, rep_y, rep_w = rep_x[sort_idx], rep_y[sort_idx], rep_w[sort_idx]
-
-    unique_x, inv = np.unique(rep_x, return_inverse=True)
-    if len(unique_x) < len(rep_x):
-        new_y = np.zeros_like(unique_x)
-        new_w = np.zeros_like(unique_x)
-        for i, ui in enumerate(inv):
-            new_y[ui] += rep_y[i] * rep_w[i]
-            new_w[ui] += rep_w[i]
-        new_y /= new_w
-        rep_x, rep_y, rep_w = unique_x, new_y, new_w
-
-    if len(rep_x) < 4:
-        coeffs = np.polyfit(flow_s, y_s, min(3, len(flow_s) - 1))
-        x_fit = np.linspace(flow_min, flow_max, 200)
-        return x_fit, np.polyval(coeffs, x_fit)
-
-    try:
-        from scipy.interpolate import UnivariateSpline
-        variance = np.var(rep_y) if np.var(rep_y) > 0 else 1.0
-        s_param = smoothing * len(rep_x) * variance * 0.01
-        spline = UnivariateSpline(rep_x, rep_y, w=rep_w, s=s_param, k=3)
-        x_fit = np.linspace(flow_min, flow_max, 200)
-        y_fit = spline(x_fit)
-    except Exception:
-        coeffs = np.polyfit(flow_s, y_s, min(3, len(flow_s) - 1))
-        x_fit = np.linspace(flow_min, flow_max, 200)
-        y_fit = np.polyval(coeffs, x_fit)
-
-    return x_fit, y_fit
+        if not (xs.min() <= kf <= xs.max()):
+            continue
+        nearest = int(np.argmin(np.abs(rep_x - kf)))
+        rep_y[nearest] = rep_y[nearest] * (1.0 + kn / 100.0)
+    return _interpolate_controls(rep_x, rep_y, smoothing)
 
 
 # =====================================================================

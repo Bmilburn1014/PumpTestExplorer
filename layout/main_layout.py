@@ -768,7 +768,7 @@ def _build_shape_section(idx, chart_type, ss=None):
                     "Double-click the chart to add a point. "
                     "Delete removes the selected point. "
                     "Drag a ring; the curve updates when you release. "
-                    "Set Point fit to Tight to hold a hydraulic dip.",
+                    "Point fit Tight holds a dip. Loose is a smoother cubic and can overshoot.",
                     className="hint-text",
                 ),
                 html.Div(className="fit-row", children=[
