@@ -914,6 +914,7 @@ def update_combined_charts(tab, units, px_data, comp_data,
                           row=1, col=1)
 
     combined.update_layout(
+        title=None,
         plot_bgcolor=CHART_BG,
         paper_bgcolor="#fff",
         margin=dict(l=50, r=15, t=30, b=45),
@@ -1408,6 +1409,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
 
     # -- Layout --------------------------------------------------------
     fig.update_layout(
+        title=None,
         xaxis_title="Flow (GPM)",
         yaxis_title=y_title,
         plot_bgcolor=CHART_BG,

@@ -341,8 +341,14 @@ def _center_panel():
     gcfg = {
         "scrollZoom": True,
         "displayModeBar": True,
-        "editable": True,
-        "edits": {"shapePosition": True},
+        "editable": False,
+        "edits": {
+            "shapePosition": True,
+            "titleText": False,
+            "axisTitleText": False,
+            "annotationText": False,
+            "legendText": False,
+        },
         "modeBarButtonsToAdd": [
             "drawline", "drawrect", "eraseshape",
         ],

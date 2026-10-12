@@ -205,6 +205,40 @@ def export_psd_curves(n_clicks, px_data, comp_data, fit_settings,
         return f"⚠ Export failed: {e}"
 
 
+
+def _normalize_shape_settings(shape_settings):
+    """Keep saved spline knots absolute and do not regenerate them on load."""
+    ss = shape_settings if isinstance(shape_settings, dict) else {
+        "head": {}, "power": {}, "active": "head"
+    }
+    for chart in ("head", "power", "efficiency"):
+        groups = ss.get(chart)
+        if not isinstance(groups, dict):
+            continue
+        for group in groups.values():
+            if not isinstance(group, dict):
+                continue
+            clean = []
+            for knot in group.get("knots") or []:
+                if not isinstance(knot, dict) or knot.get("y") is None:
+                    continue
+                try:
+                    flow = float(knot["flow"])
+                    y = float(knot["y"])
+                except (TypeError, ValueError):
+                    continue
+                clean.append({"flow": flow, "y": y})
+            if clean:
+                clean.sort(key=lambda knot: knot["flow"])
+                group["knots"] = clean
+                group["spline_on"] = bool(group.get("spline_on"))
+                group["regenerate_knots"] = False
+            elif group.get("spline_on"):
+                group["knots"] = []
+                group["regenerate_knots"] = True
+    return ss
+
+
 # =====================================================================
 # 2. SESSION SAVE
 # =====================================================================
@@ -243,7 +277,7 @@ def save_session(n_clicks, px_path, date_start, date_end,
         "show_baseline": bool(show_baseline),
         "unit_toggle": unit_toggle or "feet",
         "fit_settings": fit_settings or {},
-        "shape_settings": shape_settings or {},
+        "shape_settings": _normalize_shape_settings(shape_settings),
         "test_visibility": test_vis or {},
         "group_visibility": group_vis or {},
         "added_trims": added_trims or [],
@@ -327,7 +361,7 @@ def load_session(n_clicks):
         baseline_val,
         session.get("unit_toggle", "feet"),
         session.get("fit_settings", {}),
-        session.get("shape_settings", {}),
+        _normalize_shape_settings(session.get("shape_settings", {})),
         session.get("test_visibility", {}),
         session.get("group_visibility", {}),
         session.get("added_trims", []),
