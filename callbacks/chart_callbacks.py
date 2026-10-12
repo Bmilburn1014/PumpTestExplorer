@@ -216,15 +216,13 @@ def set_active_shape_state(tab, shape_settings, fit_settings, test_visibility, g
     Input({"type": "shape-carryout-on","index": ALL,"chart": ALL,},"value",),
     Input({"type": "shape-carryout-pct","index": ALL,"chart": ALL,},"value",),
     Input({"type": "shape-spline-on","index": ALL,"chart": ALL,},"value",),
-    Input({"type": "shape-smoothing","index": ALL,"chart": ALL,},"value",),
-
     State("shape-settings", "data"),
     prevent_initial_call=True,
 )
 def collect_shape_settings(
     droop_on_vals, droop_pct_vals,
     carryout_on_vals, carryout_pct_vals,
-    spline_on_vals, smoothing_vals,
+    spline_on_vals,
     store
 ):
     if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
@@ -257,8 +255,6 @@ def collect_shape_settings(
         if ss["spline_on"] and not _knots_are_absolute(ss.get("knots")):
             ss["knots"] = []
             ss["regenerate_knots"] = True
-    elif control == "shape-smoothing":
-        ss["smoothing"] = float(new_value or 0.3)
 
     return store
 
@@ -600,6 +596,7 @@ def arm_spline_add(n_clicks):
     triggered = ctx.triggered_id
     return {
         "armed": True,
+        "action": "add",
         "chart": str(triggered.get("chart") or "head"),
         "group": str(triggered.get("index")),
     }
@@ -608,17 +605,58 @@ def arm_spline_add(n_clicks):
 clientside_callback(
     """
     function(mode) {
+        document.body.classList.remove("knot-adding", "knot-deleting");
         if (!mode || !mode.armed) return window.dash_clientside.no_update;
+        document.body.classList.add(mode.action === "delete" ? "knot-deleting" : "knot-adding");
         var root = document.getElementById("main-chart");
         var gd = root && (root.classList.contains("js-plotly-plot")
             ? root : root.querySelector(".js-plotly-plot"));
         if (!gd || !gd._fullLayout) return window.dash_clientside.no_update;
+        function nearestKnot(evt) {
+            var shapes = (gd.layout && gd.layout.shapes) || [];
+            var bb = gd.getBoundingClientRect();
+            var px = evt.clientX - bb.left;
+            var py = evt.clientY - bb.top;
+            var best = null;
+            var bestDist = 22 * 22;
+            var xa = gd._fullLayout.xaxis;
+            var ya = gd._fullLayout.yaxis;
+            if (!xa || !ya || !xa.d2p) return null;
+            for (var i = 0; i < shapes.length; i++) {
+                var s = shapes[i];
+                var name = String(s.name || "");
+                if (name.indexOf("spline-knot|" + mode.chart + "|" + mode.group + "|") !== 0) continue;
+                var cx = (+s.x0 + +s.x1) / 2;
+                var cy = (+s.y0 + +s.y1) / 2;
+                var sx = xa._offset + xa.d2p(cx);
+                var sy = ya._offset + ya.d2p(cy);
+                var dx = px - sx;
+                var dy = py - sy;
+                var dist = dx * dx + dy * dy;
+                if (dist <= bestDist) {
+                    bestDist = dist;
+                    best = {index: parseInt(name.split("|")[3], 10), flow: cx, y: cy};
+                }
+            }
+            return best;
+        }
         function onClick(evt) {
             document.removeEventListener("click", onClick, true);
+            document.body.classList.remove("knot-adding", "knot-deleting");
             var bb = gd.getBoundingClientRect();
-            if (evt.clientX < bb.left || evt.clientX > bb.right ||
-                evt.clientY < bb.top || evt.clientY > bb.bottom) {
+            var inside = evt.clientX >= bb.left && evt.clientX <= bb.right &&
+                         evt.clientY >= bb.top && evt.clientY <= bb.bottom;
+            if (!inside) {
                 window.dash_clientside.set_props("knot-add-mode", {data: {armed: false}});
+                return;
+            }
+            if (mode.action === "delete") {
+                var hit = nearestKnot(evt);
+                if (!hit) return;
+                window.dash_clientside.set_props("knot-place-store", {
+                    data: {action: "delete", chart: mode.chart, group: mode.group,
+                           index: hit.index, flow: hit.flow, y: hit.y, t: Date.now()}
+                });
                 return;
             }
             var xa = gd._fullLayout.xaxis;
@@ -628,7 +666,8 @@ clientside_callback(
             var y = ya.p2d(evt.clientY - bb.top - ya._offset);
             if (!isFinite(flow) || !isFinite(y)) return;
             window.dash_clientside.set_props("knot-place-store", {
-                data: {chart: mode.chart, group: mode.group, flow: flow, y: y, t: Date.now()}
+                data: {action: "add", chart: mode.chart, group: mode.group,
+                       flow: flow, y: y, t: Date.now()}
             });
         }
         setTimeout(function () {
@@ -671,7 +710,16 @@ def place_clicked_knot(payload, store, units):
     store.setdefault(chart, {})
     store[chart].setdefault(group_key, {})
     knots = _sorted_knots(store[chart][group_key].get("knots"))
-    knots.append({"flow": flow, "y": y})
+    if payload.get("action") == "delete":
+        try:
+            index = int(payload.get("index"))
+        except (TypeError, ValueError):
+            raise PreventUpdate
+        if len(knots) <= 3 or not (0 <= index < len(knots)):
+            return store, {"armed": False}
+        del knots[index]
+    else:
+        knots.append({"flow": flow, "y": y})
     store[chart][group_key]["knots"] = _sorted_knots(knots)
     store[chart][group_key]["spline_on"] = True
     store[chart][group_key]["regenerate_knots"] = False
@@ -683,33 +731,31 @@ def place_clicked_knot(payload, store, units):
     Input("knot-add-mode", "data"),
 )
 def show_knot_add_hint(mode):
-    if isinstance(mode, dict) and mode.get("armed"):
-        return "Click the chart to place the point. Click outside the chart to cancel."
-    return ""
+    if not isinstance(mode, dict) or not mode.get("armed"):
+        return ""
+    if mode.get("action") == "delete":
+        return "Click the point to delete. Click outside the chart to cancel."
+    return "Click the chart to place the point. Click outside the chart to cancel."
 
 
 @callback(
-    Output("shape-settings", "data", allow_duplicate=True),
+    Output("knot-add-mode", "data", allow_duplicate=True),
     Input({"type": "spline-delete", "index": ALL, "chart": ALL}, "n_clicks"),
-    State("shape-settings", "data"),
     prevent_initial_call=True,
 )
-def delete_spline_knot(n_clicks, store):
+def arm_spline_delete(n_clicks):
+    """Arm click-to-delete. The next click on a point removes it."""
     if not ctx.triggered_id or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
     if not any(n for n in (n_clicks or []) if n):
         raise PreventUpdate
     triggered = ctx.triggered_id
-    group_key = str(triggered.get("index"))
-    chart = str(triggered.get("chart") or "head")
-    store = store or {"head": {}, "power": {}, "active": chart}
-    knots = _sorted_knots(((store.get(chart) or {}).get(group_key) or {}).get("knots"))
-    if len(knots) <= 3:
-        raise PreventUpdate
-    del knots[len(knots) // 2]
-    store[chart][group_key]["knots"] = knots
-    store[chart][group_key]["spline_on"] = True
-    return store
+    return {
+        "armed": True,
+        "action": "delete",
+        "chart": str(triggered.get("chart") or "head"),
+        "group": str(triggered.get("index")),
+    }
 
 
 @callback(
@@ -2201,11 +2247,8 @@ def _interpolate_controls(xs, ys, smoothing=0.3, n_out=200):
     if len(xs) < 3:
         return x_fit, np.interp(x_fit, xs, ys)
     try:
-        if float(smoothing or 0) < 0.5:
-            from scipy.interpolate import PchipInterpolator
-            return x_fit, PchipInterpolator(xs, ys)(x_fit)
-        from scipy.interpolate import CubicSpline
-        return x_fit, CubicSpline(xs, ys, bc_type="natural")(x_fit)
+        from scipy.interpolate import PchipInterpolator
+        return x_fit, PchipInterpolator(xs, ys)(x_fit)
     except Exception:
         return x_fit, np.interp(x_fit, xs, ys)
 
@@ -2272,7 +2315,7 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
         mode="markers",
         name=f"spline-knots|{chart_type}|{group_index}",
         marker=dict(
-            size=16,
+            size=11,
             symbol="circle",
             color=color,
             line=dict(width=2, color="#111111"),
@@ -2288,8 +2331,8 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
     x_span = max(float(np.ptp(flows)), 1.0)
     y_span = max(float(np.ptp(values)), 1.0)
     # Assume a typical plot area; 16px marker on ~700x450 plot.
-    rx = x_span / 700.0 * 8.0
-    ry = y_span / 450.0 * 8.0
+    rx = x_span / 700.0 * 5.5
+    ry = y_span / 450.0 * 5.5
     rx = max(rx, x_span * 0.004)
     ry = max(ry, y_span * 0.006)
     for i, (flow, value) in enumerate(zip(flows, values)):

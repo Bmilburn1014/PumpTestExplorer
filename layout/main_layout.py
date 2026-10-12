@@ -743,33 +743,9 @@ def _build_shape_section(idx, chart_type, ss=None):
                     value=init_spline_on, className="fit-check",
                 ),
                 html.Div(
-                    "Builds a spline with 25 points on the chart. "
-                    "Press a colored point and drag it. "
-                    "Zoom is blocked while a point is held. "
-                    "The slider sets how tightly the curve follows the points.",
-                    className="hint-text",
-                ),
-                html.Div(className="slider-row compact-slider",
-                         children=[
-                    html.Div(className="row space-between", children=[
-                        html.Label("Point fit:", className="fit-label"),
-                        html.Span(
-                            id={"type": "shape-smooth-readout",
-                                "index": idx},
-                            className="accent-value"),
-                    ]),
-                    dcc.Slider(
-                        id={"type": "shape-smoothing", "index": idx, "chart": chart_type},
-                        min=0, max=1, step=0.05, value=init_smooth,
-                        marks={0: "Tight", 0.5: "Med", 1: "Loose"},
-                        tooltip={"placement": "bottom",
-                                 "always_visible": False},
-                    ),
-                ]),
-                html.Div(
-                    "Add point, then click the chart where the point should go. "
-                    "Drag a point to move it. Points cannot be resized. "
-                    "Point fit Tight holds a dip. Loose is a smoother cubic and can overshoot.",
+                    "Add point, then click the chart to place it. "
+                    "Delete point, then click the point to remove it. "
+                    "Drag a point to move it.",
                     className="hint-text",
                 ),
                 html.Div(className="fit-row", children=[

@@ -429,3 +429,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .js-plotly-plot .select-outline .cursor-pointer {
     display: none !important;
 }
+
+
+body.knot-adding, body.knot-adding .js-plotly-plot, body.knot-adding .nsewdrag {
+    cursor: crosshair !important;
+}
+body.knot-deleting, body.knot-deleting .js-plotly-plot, body.knot-deleting .nsewdrag {
+    cursor: pointer !important;
+}
