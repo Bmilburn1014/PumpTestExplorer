@@ -597,6 +597,7 @@ def place_clicked_knot(click, mode, store, units):
         raise PreventUpdate
     if not (np.isfinite(flow) and np.isfinite(y)):
         raise PreventUpdate
+    display_y = y
     if chart == "head" and units == "psi":
         y = y / FEET_TO_PSI
     store = store or {"head": {}, "power": {}, "active": chart}
@@ -604,19 +605,27 @@ def place_clicked_knot(click, mode, store, units):
     store[chart].setdefault(group_key, {})
     knots = _sorted_knots(store[chart][group_key].get("knots"))
     if mode.get("action") == "delete":
+        index = point.get("customdata")
+        if isinstance(index, (list, tuple)):
+            index = index[0]
         try:
-            index = int(np.argmin([
-                (float(k["flow"]) - flow) ** 2 + (float(k["y"]) - (
-                    y / FEET_TO_PSI if chart == "head" and units == "psi" else y
-                )) ** 2
-                for k in knots
-            ])) if knots else -1
+            index = int(index)
         except (TypeError, ValueError):
-            raise PreventUpdate
+            index = -1
+        if not (0 <= index < len(knots)):
+            best, best_d = -1, None
+            for i, knot in enumerate(knots):
+                ky = float(knot["y"])
+                if chart == "head" and units == "psi":
+                    ky = ky * FEET_TO_PSI
+                dist = (float(knot["flow"]) - flow) ** 2 + (ky - display_y) ** 2
+                if best_d is None or dist < best_d:
+                    best, best_d = i, dist
+            index = best
         if len(knots) <= 3 or not (0 <= index < len(knots)):
-            return store, {"armed": False}
+            return no_update, mode
         if knots[index].get("locked_x"):
-            return store, {"armed": False}
+            return no_update, mode
         del knots[index]
     else:
         knots.append({"flow": flow, "y": y})
@@ -715,19 +724,12 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
 
 
 
-@callback(
-    Output("chart-view", "data"),
-    Input("main-chart", "relayoutData"),
-    State("chart-view", "data"),
-    prevent_initial_call=True,
-)
-def save_chart_view(relayout, current):
-    """Remember the zoom so knot handles can be sized in Python."""
+def _view_from_relayout(relayout, current):
     if not isinstance(relayout, dict):
-        raise PreventUpdate
+        return None
     view = dict(current or {})
     if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
-        return None
+        return {"cleared": True}
     x_range = relayout.get("xaxis.range")
     y_range = relayout.get("yaxis.range")
     if x_range is None and "xaxis.range[0]" in relayout:
@@ -735,12 +737,58 @@ def save_chart_view(relayout, current):
     if y_range is None and "yaxis.range[0]" in relayout:
         y_range = [relayout.get("yaxis.range[0]"), relayout.get("yaxis.range[1]")]
     if x_range is None and y_range is None:
-        raise PreventUpdate
+        return None
     if x_range is not None:
         view["x"] = x_range
     if y_range is not None:
         view["y"] = y_range
+    view.pop("cleared", None)
     return view
+
+
+@callback(
+    Output("chart-view-pending", "data"),
+    Output("zoom-settle", "disabled"),
+    Input("main-chart", "relayoutData"),
+    State("chart-view", "data"),
+    prevent_initial_call=True,
+)
+def note_chart_zoom(relayout, current):
+    """Record a zoom without rebuilding. The settle timer commits it."""
+    view = _view_from_relayout(relayout, current)
+    if view is None:
+        raise PreventUpdate
+    return {"view": None if view.get("cleared") else view, "t": __import__("time").time()}, False
+
+
+@callback(
+    Output("chart-view", "data"),
+    Output("zoom-settle", "disabled", allow_duplicate=True),
+    Input("zoom-settle", "n_intervals"),
+    State("chart-view-pending", "data"),
+    State("chart-view", "data"),
+    prevent_initial_call=True,
+)
+def commit_settled_zoom(n_intervals, pending, current):
+    """Resize handles only after zoom has been still for a moment."""
+    if not isinstance(pending, dict):
+        raise PreventUpdate
+    if __import__("time").time() - float(pending.get("t") or 0) < 0.45:
+        raise PreventUpdate
+    view = pending.get("view")
+    if view == current:
+        return no_update, True
+    return view, True
+
+
+@callback(
+    Output("chart-view", "data", allow_duplicate=True),
+    Input("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def clear_view_on_unit_change(_units):
+    """A unit change rescales the axis, so the old zoom size is wrong."""
+    return None
 
 
 @callback(
@@ -2302,6 +2350,7 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units,
             color=marker_color,
             line=dict(width=2, color="#111111"),
         ),
+        customdata=list(range(len(flows))),
         hovertemplate=(
             "Drag point<br>Q=%{x:.1f} GPM<br>Value=%{y:.2f}<extra></extra>"
         ),
