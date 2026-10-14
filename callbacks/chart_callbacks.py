@@ -372,6 +372,19 @@ def _sorted_knots(knots):
     return clean
 
 
+def _same_knots(left, right):
+    a = _sorted_knots(left)
+    b = _sorted_knots(right)
+    if len(a) != len(b):
+        return False
+    for one, two in zip(a, b):
+        if abs(one["flow"] - two["flow"]) > 1e-6 or abs(one["y"] - two["y"]) > 1e-6:
+            return False
+        if bool(one.get("locked_x")) != bool(two.get("locked_x")):
+            return False
+    return True
+
+
 def _ensure_zero_flow_knot(knots):
     """Always keep a shutoff knot at zero flow. It can only move vertically."""
     knots = _sorted_knots(knots)
@@ -653,7 +666,7 @@ def show_knot_add_hint(mode):
     if not isinstance(mode, dict) or not mode.get("armed"):
         return ""
     if mode.get("action") == "delete":
-        return "Click the point to delete. Click Delete point again to cancel."
+        return "Click a colored point to delete it. The dark diamond stays. Click Delete point again to cancel."
     return "Click the chart to place the point. Click Add point again to cancel."
 
 
@@ -710,7 +723,7 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
                 continue
             if _knots_are_absolute(ss.get("knots")) and not ss.get("regenerate_knots"):
                 fixed = _ensure_zero_flow_knot(ss.get("knots"))
-                if fixed != ss.get("knots"):
+                if not _same_knots(fixed, ss.get("knots")):
                     ss["knots"] = fixed
                     changed = True
                 continue
@@ -732,6 +745,87 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
         raise PreventUpdate
     return store
 
+
+
+def _view_from_relayout(relayout, current):
+    if not isinstance(relayout, dict):
+        return None
+    view = dict(current or {})
+    if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
+        return {"cleared": True}
+    x_range = relayout.get("xaxis.range")
+    y_range = relayout.get("yaxis.range")
+    if x_range is None and "xaxis.range[0]" in relayout:
+        x_range = [relayout.get("xaxis.range[0]"), relayout.get("xaxis.range[1]")]
+    if y_range is None and "yaxis.range[0]" in relayout:
+        y_range = [relayout.get("yaxis.range[0]"), relayout.get("yaxis.range[1]")]
+    if x_range is None and y_range is None:
+        return None
+    if x_range is not None:
+        view["x"] = [float(x_range[0]), float(x_range[1])]
+    if y_range is not None:
+        view["y"] = [float(y_range[0]), float(y_range[1])]
+    view.pop("cleared", None)
+    return view
+
+
+@callback(
+    Output("chart-view-pending", "data"),
+    Output("zoom-settle", "disabled", allow_duplicate=True),
+    Input("main-chart", "relayoutData"),
+    State("chart-view", "data"),
+    prevent_initial_call=True,
+)
+def note_chart_zoom(relayout, current):
+    """Remember a zoom. Do not rebuild until it has settled."""
+    view = _view_from_relayout(relayout, current)
+    if view is None:
+        raise PreventUpdate
+    return {"view": None if view.get("cleared") else view, "t": __import__("time").time()}, False
+
+
+@callback(
+    Output("chart-view", "data"),
+    Output("zoom-settle", "disabled", allow_duplicate=True),
+    Input("zoom-settle", "n_intervals"),
+    State("chart-view-pending", "data"),
+    State("chart-view", "data"),
+    prevent_initial_call=True,
+)
+def commit_settled_zoom(_n, pending, current):
+    if not isinstance(pending, dict):
+        raise PreventUpdate
+    if __import__("time").time() - float(pending.get("t") or 0) < 0.6:
+        raise PreventUpdate
+    view = pending.get("view")
+    if _same_view(view, current):
+        return no_update, True
+    return view, True
+
+
+def _same_view(left, right):
+    if left == right:
+        return True
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return False
+    for key in ("x", "y"):
+        a, b = left.get(key), right.get(key)
+        if a is None and b is None:
+            continue
+        if not a or not b or len(a) != 2 or len(b) != 2:
+            return False
+        if abs(float(a[0]) - float(b[0])) > 1e-6 or abs(float(a[1]) - float(b[1])) > 1e-6:
+            return False
+    return True
+
+
+@callback(
+    Output("chart-view", "data", allow_duplicate=True),
+    Input("unit-toggle", "value"),
+    prevent_initial_call=True,
+)
+def clear_view_on_unit_change(_units):
+    return None
 
 
 @callback(
@@ -764,11 +858,12 @@ def chart_cursor(mode):
     Input("added-trims", "data"),
     Input("group-visibility", "data"),
     Input("knot-add-mode", "data"),
+    Input("chart-view", "data"),
 )
 def update_main_chart(tab, units, px_data, comp_data,
                       show_baseline, band_pct, fit_settings,
                       test_vis, shape_settings, added_trims,
-                      group_vis, add_mode):
+                      group_vis, add_mode, chart_view):
     if tab == "combined":
         return no_update
     chart_type = tab or "head"
@@ -781,7 +876,7 @@ def update_main_chart(tab, units, px_data, comp_data,
                         shape_settings or {},
                         added_trims or [],
                         group_vis or {},
-                        None, add_mode)
+                        chart_view, add_mode)
 
 
 @callback(
