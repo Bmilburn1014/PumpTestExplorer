@@ -37,6 +37,8 @@ def build_layout():
             dcc.Store(id="knot-add-mode", data={"armed": False}),
             dcc.Store(id="knot-place-store", data=None),
             dcc.Store(id="chart-view", data=None),
+            dcc.Store(id="chart-view-pending", data=None),
+            dcc.Interval(id="zoom-settle", interval=200, disabled=True),
             dcc.Store(id="added-trims", data=[]),
             dcc.Store(id="group-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
 
