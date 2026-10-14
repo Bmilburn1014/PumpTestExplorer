@@ -771,7 +771,7 @@ def _view_from_relayout(relayout, current):
 
 @callback(
     Output("chart-view-pending", "data"),
-    Output("zoom-settle", "disabled", allow_duplicate=True),
+    Output("zoom-settle", "disabled"),
     Input("main-chart", "relayoutData"),
     State("chart-view", "data"),
     prevent_initial_call=True,
