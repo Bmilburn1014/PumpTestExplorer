@@ -523,9 +523,17 @@ def apply_shape_drag(relayout, figure, store, units):
             continue
         _, chart, group_key, point = parts
         try:
-            flow = (float(shape["x0"]) + float(shape["x1"])) / 2.0
-            value = (float(shape["y0"]) + float(shape["y1"])) / 2.0
             point = int(point)
+            if shape.get("path"):
+                nums = [float(n) for n in __import__("re").findall(
+                    r"[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?", str(shape["path"]))]
+                if len(nums) < 4:
+                    continue
+                flow = sum(nums[0::2]) / (len(nums) // 2)
+                value = sum(nums[1::2]) / (len(nums) // 2)
+            else:
+                flow = (float(shape["x0"]) + float(shape["x1"])) / 2.0
+                value = (float(shape["y0"]) + float(shape["y1"])) / 2.0
         except (KeyError, TypeError, ValueError):
             continue
         if chart == "head" and units == "psi":
@@ -548,6 +556,83 @@ def apply_shape_drag(relayout, figure, store, units):
         store[chart][group_key]["spline_on"] = True
         store[chart][group_key]["regenerate_knots"] = False
     return store
+
+
+
+clientside_callback(
+    """
+    function(fig) {
+        if (window.__knotSizeV1) return window.dash_clientside.no_update;
+        window.__knotSizeV1 = true;
+        function plotNode() {
+            var root = document.getElementById("main-chart");
+            if (!root) return null;
+            return root.classList.contains("js-plotly-plot")
+                ? root : root.querySelector(".js-plotly-plot");
+        }
+        function fitShapes(gd) {
+            if (!gd || !gd._fullLayout || gd.__fittingShapes) return;
+            var xa = gd._fullLayout.xaxis;
+            var ya = gd._fullLayout.yaxis;
+            if (!xa || !ya || !xa._length || !ya._length) return;
+            var rx = Math.abs(xa.range[1] - xa.range[0]) / xa._length * 5.5;
+            var ry = Math.abs(ya.range[1] - ya.range[0]) / ya._length * 5.5;
+            if (!(rx > 0) || !(ry > 0)) return;
+            var shapes = (gd.layout && gd.layout.shapes) || [];
+            var updates = {};
+            for (var i = 0; i < shapes.length; i++) {
+                var s = shapes[i];
+                if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
+                if (s.type === "path") {
+                    var nums = String(s.path || "").match(/[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/g) || [];
+                    if (nums.length < 4) continue;
+                    var xs = [], ys = [];
+                    for (var n = 0; n < nums.length; n++) {
+                        if (n % 2 === 0) xs.push(+nums[n]); else ys.push(+nums[n]);
+                    }
+                    var cx = xs.reduce(function(a, b) { return a + b; }, 0) / xs.length;
+                    var cy = ys.reduce(function(a, b) { return a + b; }, 0) / ys.length;
+                    var path = "M " + cx + "," + (cy + ry)
+                        + " L " + (cx + rx) + "," + cy
+                        + " L " + cx + "," + (cy - ry)
+                        + " L " + (cx - rx) + "," + cy + " Z";
+                    if (path !== s.path) updates["shapes[" + i + "].path"] = path;
+                } else {
+                    var cx = (+s.x0 + +s.x1) / 2;
+                    var cy = (+s.y0 + +s.y1) / 2;
+                    var x0 = cx - rx, x1 = cx + rx, y0 = cy - ry, y1 = cy + ry;
+                    if (Math.abs(+s.x1 - +s.x0 - 2 * rx) > rx * 0.08) {
+                        updates["shapes[" + i + "].x0"] = x0;
+                        updates["shapes[" + i + "].x1"] = x1;
+                        updates["shapes[" + i + "].y0"] = y0;
+                        updates["shapes[" + i + "].y1"] = y1;
+                    }
+                }
+            }
+            if (!Object.keys(updates).length) return;
+            gd.__fittingShapes = true;
+            window.Plotly.relayout(gd, updates).then(function () {
+                gd.__fittingShapes = false;
+            }, function () { gd.__fittingShapes = false; });
+        }
+        function hook() {
+            var gd = plotNode();
+            if (!gd || gd.__knotSizeHooked) return;
+            gd.__knotSizeHooked = true;
+            gd.on("plotly_afterplot", function () { fitShapes(gd); });
+            gd.on("plotly_relayout", function () {
+                setTimeout(function () { fitShapes(gd); }, 0);
+            });
+            fitShapes(gd);
+        }
+        setTimeout(hook, 0);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("knot-drag-store", "data", allow_duplicate=True),
+    Input("main-chart", "figure"),
+    prevent_initial_call=True,
+)
 
 
 def apply_dragged_knots(payload, store, units):
@@ -2374,31 +2459,48 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
         showlegend=False,
         legendgroup=f"grp_{group_index}",
     ))
-    # Size the editable circle to the same pixel diameter as the marker
-    # so the drag handle looks like a shaded copy of the point.
+    # Initial size only. A chart callback resizes these to the marker
+    # after every zoom so the handle stays behind the point.
     x_span = max(float(np.ptp(flows)), 1.0)
     y_span = max(float(np.ptp(values)), 1.0)
-    # Assume a typical plot area; 16px marker on ~700x450 plot.
-    rx = x_span / 700.0 * 5.5
-    ry = y_span / 450.0 * 5.5
-    rx = max(rx, x_span * 0.004)
-    ry = max(ry, y_span * 0.006)
+    rx = max(x_span / 700.0 * 5.5, x_span * 0.004)
+    ry = max(y_span / 450.0 * 5.5, y_span * 0.006)
     for i, (flow, value) in enumerate(zip(flows, values)):
-        fig.add_shape(
-            type="circle",
-            xref="x",
-            yref="y",
-            x0=float(flow) - rx,
-            x1=float(flow) + rx,
-            y0=float(value) - ry,
-            y1=float(value) + ry,
-            line=dict(color="#334155" if locked[i] else color, width=1),
-            fillcolor="#334155" if locked[i] else color,
-            opacity=0.55,
-            layer="above",
-            editable=True,
-            name=f"spline-knot|{chart_type}|{group_index}|{i}",
-        )
+        shape_color = "#334155" if locked[i] else color
+        if locked[i]:
+            fig.add_shape(
+                type="path",
+                xref="x",
+                yref="y",
+                path=(
+                    f"M {float(flow)},{float(value) + ry} "
+                    f"L {float(flow) + rx},{float(value)} "
+                    f"L {float(flow)},{float(value) - ry} "
+                    f"L {float(flow) - rx},{float(value)} Z"
+                ),
+                line=dict(color=shape_color, width=1),
+                fillcolor=shape_color,
+                opacity=0.55,
+                layer="below",
+                editable=True,
+                name=f"spline-knot|{chart_type}|{group_index}|{i}",
+            )
+        else:
+            fig.add_shape(
+                type="circle",
+                xref="x",
+                yref="y",
+                x0=float(flow) - rx,
+                x1=float(flow) + rx,
+                y0=float(value) - ry,
+                y1=float(value) + ry,
+                line=dict(color=shape_color, width=1),
+                fillcolor=shape_color,
+                opacity=0.55,
+                layer="below",
+                editable=True,
+                name=f"spline-knot|{chart_type}|{group_index}|{i}",
+            )
 
 
 def _visible_points_for_knots(group_index, chart, groups, test_vis,
