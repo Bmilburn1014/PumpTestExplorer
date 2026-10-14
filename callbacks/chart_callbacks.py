@@ -543,18 +543,32 @@ def apply_shape_drag(relayout, figure, store, units):
         raise PreventUpdate
 
     store = store or {"head": {}, "power": {}, "active": "head"}
+    changed = False
     for (chart, group_key), points in updates.items():
         store.setdefault(chart, {})
         store[chart].setdefault(group_key, {})
         knots = _sorted_knots(store[chart][group_key].get("knots"))
+        group_changed = False
         for point, knot in points.items():
-            if 0 <= point < len(knots):
-                if knots[point].get("locked_x"):
-                    knot = {"flow": 0.0, "y": knot["y"], "locked_x": True}
+            if not (0 <= point < len(knots)):
+                continue
+            if knots[point].get("locked_x"):
+                knot = {"flow": 0.0, "y": knot["y"], "locked_x": True}
+            old = knots[point]
+            if (abs(float(old.get("flow", 0)) - float(knot["flow"])) > 1e-4
+                    or abs(float(old.get("y", 0)) - float(knot["y"])) > 1e-4):
                 knots[point] = knot
+                group_changed = True
+        if not group_changed:
+            continue
         store[chart][group_key]["knots"] = _ensure_zero_flow_knot(knots)
         store[chart][group_key]["spline_on"] = True
         store[chart][group_key]["regenerate_knots"] = False
+        changed = True
+    # Shape resize keeps the same centers. Ignore it so the chart
+    # does not rebuild in a loop and block other buttons.
+    if not changed:
+        raise PreventUpdate
     return store
 
 
@@ -611,9 +625,17 @@ clientside_callback(
             }
             if (!Object.keys(updates).length) return;
             gd.__fittingShapes = true;
-            window.Plotly.relayout(gd, updates).then(function () {
+            try {
+                var done = window.Plotly.relayout(gd, updates);
+                if (done && done.then) {
+                    done.then(function () { gd.__fittingShapes = false; },
+                              function () { gd.__fittingShapes = false; });
+                } else {
+                    gd.__fittingShapes = false;
+                }
+            } catch (err) {
                 gd.__fittingShapes = false;
-            }, function () { gd.__fittingShapes = false; });
+            }
         }
         function hook() {
             var gd = plotNode();

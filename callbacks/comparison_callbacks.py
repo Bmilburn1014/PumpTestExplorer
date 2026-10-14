@@ -395,13 +395,14 @@ def update_vertical_impeller_part_options(
 # ═════════════════════════════════════════════════════════════
 
 @callback(
-    Output("px-file-path", "value"),
+    Output("px-file-path", "value", allow_duplicate=True),
+    Output("px-status", "children", allow_duplicate=True),
     Input("browse-px-btn", "n_clicks"),
     prevent_initial_call=True,
 )
 def browse_for_px_file(n_clicks):
     if not n_clicks:
-        return no_update
+        return no_update, no_update
     try:
         import subprocess
         import platform
@@ -454,14 +455,18 @@ def browse_for_px_file(n_clicks):
 
         path = result.stdout.strip()
         if result.returncode != 0 and result.stderr:
-            _log(f"Browse error: {result.stderr[:200]}")
-        return path if path else no_update
+            msg = result.stderr.strip().splitlines()[-1][:180]
+            _log(f"Browse error: {msg}")
+            return no_update, f"Browse failed: {msg}"
+        if not path:
+            return no_update, "Browse cancelled."
+        return path, ""
     except subprocess.TimeoutExpired:
         _log("Browse dialog timed out")
-        return no_update
+        return no_update, "Browse dialog timed out."
     except Exception as e:
         _log(f"Browse failed: {e}")
-        return no_update
+        return no_update, f"Browse failed: {e}"
 
 
 # ═════════════════════════════════════════════════════════════
@@ -470,7 +475,7 @@ def browse_for_px_file(n_clicks):
 
 @callback(
     Output("px-data", "data"),
-    Output("px-status", "children"),
+    Output("px-status", "children", allow_duplicate=True),
     Output("px-info-panel", "children"),
     Output("px-info-panel", "className"),
     Output("run-btn", "disabled", allow_duplicate=True),
