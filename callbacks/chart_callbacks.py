@@ -2345,7 +2345,7 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units,
                 fillcolor=shape_color,
                 opacity=0.55,
                 layer="below",
-                editable=True,
+                editable=editable,
                 name=f"spline-knot|{chart_type}|{group_index}|{i}",
             )
 
