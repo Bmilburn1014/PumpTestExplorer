@@ -449,9 +449,36 @@ def _sorted_knots(knots):
         except (TypeError, ValueError):
             continue
         if np.isfinite(flow) and np.isfinite(y):
-            clean.append({"flow": flow, "y": y})
+            item = {"flow": flow, "y": y}
+            if knot.get("locked_x") or abs(flow) < 1e-3:
+                item["flow"] = 0.0
+                item["locked_x"] = True
+            clean.append(item)
     clean.sort(key=lambda knot: knot["flow"])
     return clean
+
+
+def _ensure_zero_flow_knot(knots):
+    """Always keep a shutoff knot at zero flow. It can only move vertically."""
+    knots = _sorted_knots(knots)
+    if not knots:
+        return knots
+    if any(k.get("locked_x") or abs(k["flow"]) < 1e-3 for k in knots):
+        return knots
+    if len(knots) >= 2 and knots[1]["flow"] > knots[0]["flow"]:
+        slope = (knots[1]["y"] - knots[0]["y"]) / (knots[1]["flow"] - knots[0]["flow"])
+        y0 = knots[0]["y"] - slope * knots[0]["flow"]
+    else:
+        y0 = knots[0]["y"]
+    knots.insert(0, {"flow": 0.0, "y": float(y0), "locked_x": True})
+    return knots
+
+
+def _to_display_y(values, chart_type, units):
+    values = np.asarray(values, dtype=float)
+    if chart_type == "head" and units == "psi":
+        return values * FEET_TO_PSI
+    return values
 
 
 
@@ -514,8 +541,10 @@ def apply_shape_drag(relayout, figure, store, units):
         knots = _sorted_knots(store[chart][group_key].get("knots"))
         for point, knot in points.items():
             if 0 <= point < len(knots):
+                if knots[point].get("locked_x"):
+                    knot = {"flow": 0.0, "y": knot["y"], "locked_x": True}
                 knots[point] = knot
-        store[chart][group_key]["knots"] = _sorted_knots(knots)
+        store[chart][group_key]["knots"] = _ensure_zero_flow_knot(knots)
         store[chart][group_key]["spline_on"] = True
         store[chart][group_key]["regenerate_knots"] = False
     return store
@@ -717,10 +746,12 @@ def place_clicked_knot(payload, store, units):
             raise PreventUpdate
         if len(knots) <= 3 or not (0 <= index < len(knots)):
             return store, {"armed": False}
+        if knots[index].get("locked_x"):
+            return store, {"armed": False}
         del knots[index]
     else:
         knots.append({"flow": flow, "y": y})
-    store[chart][group_key]["knots"] = _sorted_knots(knots)
+    store[chart][group_key]["knots"] = _ensure_zero_flow_knot(knots)
     store[chart][group_key]["spline_on"] = True
     store[chart][group_key]["regenerate_knots"] = False
     return store, {"armed": False}
@@ -788,6 +819,10 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
             if not isinstance(ss, dict) or not ss.get("spline_on"):
                 continue
             if _knots_are_absolute(ss.get("knots")) and not ss.get("regenerate_knots"):
+                fixed = _ensure_zero_flow_knot(ss.get("knots"))
+                if fixed != ss.get("knots"):
+                    ss["knots"] = fixed
+                    changed = True
                 continue
             try:
                 gi = int(group_key)
@@ -799,7 +834,8 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
             if len(flow) < 2:
                 continue
             poly_order = int((chart_fs.get(group_key) or {}).get("poly_order", 3))
-            ss["knots"] = _generate_knots(flow, values, poly_order, MAX_KNOTS)
+            ss["knots"] = _ensure_zero_flow_knot(
+                _generate_knots(flow, values, poly_order, MAX_KNOTS))
             ss["regenerate_knots"] = False
             changed = True
     if not changed:
@@ -915,6 +951,7 @@ def update_combined_charts(tab, units, px_data, comp_data,
 
     combined.update_layout(
         title=None,
+        uirevision=f"combined-{units or 'feet'}",
         plot_bgcolor=CHART_BG,
         paper_bgcolor="#fff",
         margin=dict(l=50, r=15, t=30, b=45),
@@ -1264,6 +1301,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if spline_on:
                         x_fit, y_fit = _resolve_spline_fit(
                             fit_f, fit_y, knots, smoothing, min_fit, max_fit)
+                        y_fit = _to_display_y(y_fit, chart_type, units)
                     else:
                         try:
                             order = min(poly_order, len(fit_f) - 1)
@@ -1361,6 +1399,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if spline_on:
                         x_fit, y_fit = _resolve_spline_fit(
                             fit_f, fit_y, knots, smoothing, min_fit, max_fit)
+                        y_fit = _to_display_y(y_fit, chart_type, units)
                     else:
                         try:
                             order = min(poly_order, len(fit_f) - 1)
@@ -1428,6 +1467,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     yanchor="top", y=0.98,
                     xanchor="right", x=0.99),
         hovermode="closest", dragmode="zoom",
+        uirevision=f"{chart_type}-{units or 'feet'}",
     )
 
     if chart_type == "efficiency":
@@ -2152,6 +2192,7 @@ def _render_virtual_groups(fig, chart_type, units, y_title,
                         if np.any(trunc):
                             x_fit = x_fit[trunc]
                             y_fit = y_fit[trunc]
+                        y_fit = _to_display_y(y_fit, chart_type, units)
                     else:
                         order = min(poly_order, len(vf_fit) - 1)
                         coeffs = np.polyfit(vf_fit, vy_fit, order)
@@ -2237,7 +2278,8 @@ def _generate_knots(flow, values, poly_order=3, n_knots=MAX_KNOTS):
             yk = np.polyval(np.polyfit(xs, ys, order), xk)
         except Exception:
             yk = np.interp(xk, xs, ys)
-    return [{"flow": float(x), "y": float(y)} for x, y in zip(xk, yk)]
+    knots = [{"flow": float(x), "y": float(y)} for x, y in zip(xk, yk)]
+    return _ensure_zero_flow_knot(knots)
 
 
 def _interpolate_controls(xs, ys, smoothing=0.3, n_out=200):
@@ -2311,6 +2353,10 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
     values = np.asarray(values, dtype=float)[order]
     if chart_type == "head" and units == "psi":
         values = values * FEET_TO_PSI
+    locked = [bool(k.get("locked_x")) or abs(float(k["flow"])) < 1e-3
+              for k in sorted(knots, key=lambda k: float(k["flow"]))]
+    marker_color = ["#334155" if flag else color for flag in locked]
+    marker_symbol = ["diamond" if flag else "circle" for flag in locked]
     fig.add_trace(go.Scatter(
         x=flows,
         y=values,
@@ -2318,8 +2364,8 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
         name=f"spline-knots|{chart_type}|{group_index}",
         marker=dict(
             size=11,
-            symbol="circle",
-            color=color,
+            symbol=marker_symbol,
+            color=marker_color,
             line=dict(width=2, color="#111111"),
         ),
         hovertemplate=(
@@ -2346,8 +2392,8 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units):
             x1=float(flow) + rx,
             y0=float(value) - ry,
             y1=float(value) + ry,
-            line=dict(color=color, width=1),
-            fillcolor=color,
+            line=dict(color="#334155" if locked[i] else color, width=1),
+            fillcolor="#334155" if locked[i] else color,
             opacity=0.55,
             layer="above",
             editable=True,

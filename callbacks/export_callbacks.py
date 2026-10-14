@@ -227,7 +227,11 @@ def _normalize_shape_settings(shape_settings):
                     y = float(knot["y"])
                 except (TypeError, ValueError):
                     continue
-                clean.append({"flow": flow, "y": y})
+                item = {"flow": flow, "y": y}
+                if knot.get("locked_x") or abs(flow) < 1e-3:
+                    item["flow"] = 0.0
+                    item["locked_x"] = True
+                clean.append(item)
             if clean:
                 clean.sort(key=lambda knot: knot["flow"])
                 group["knots"] = clean
