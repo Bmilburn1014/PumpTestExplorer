@@ -409,6 +409,9 @@ def apply_shape_drag(relayout, figure, store, units):
     """Save a Plotly shape drag. Zoom and pan relayouts are ignored."""
     if not isinstance(relayout, dict) or not figure:
         raise PreventUpdate
+    if not any(isinstance(k, str) and (k == "shapes" or k.startswith("shapes["))
+               for k in relayout):
+        raise PreventUpdate
     shapes = list(((figure.get("layout") or {}).get("shapes")) or [])
     if isinstance(relayout.get("shapes"), list):
         shapes = [dict(s) for s in relayout["shapes"]]
@@ -576,10 +579,11 @@ def arm_spline_add(n_clicks, mode):
     Input("main-chart", "clickData"),
     State("knot-add-mode", "data"),
     State("shape-settings", "data"),
+    State("main-chart", "figure"),
     State("unit-toggle", "value"),
     prevent_initial_call=True,
 )
-def place_clicked_knot(click, mode, store, units):
+def place_clicked_knot(click, mode, store, figure, units):
     if not isinstance(mode, dict) or not mode.get("armed"):
         raise PreventUpdate
     points = (click or {}).get("points") or []
@@ -605,19 +609,25 @@ def place_clicked_knot(click, mode, store, units):
     store[chart].setdefault(group_key, {})
     knots = _sorted_knots(store[chart][group_key].get("knots"))
     if mode.get("action") == "delete":
-        index = point.get("customdata")
-        if isinstance(index, (list, tuple)):
-            index = index[0]
-        try:
-            index = int(index)
-        except (TypeError, ValueError):
-            index = -1
+        index = -1
+        curve = point.get("curveNumber")
+        traces = (figure or {}).get("data") or []
+        name = ""
+        if isinstance(curve, int) and 0 <= curve < len(traces):
+            name = str((traces[curve] or {}).get("name") or "")
+        if name.startswith("spline-knots|"):
+            try:
+                index = int(point.get("pointNumber"))
+            except (TypeError, ValueError):
+                index = -1
         if not (0 <= index < len(knots)):
             best, best_d = -1, None
             for i, knot in enumerate(knots):
+                if knot.get("locked_x"):
+                    continue
                 ky = float(knot["y"])
                 if chart == "head" and units == "psi":
-                    ky = ky * FEET_TO_PSI
+                    ky *= FEET_TO_PSI
                 dist = (float(knot["flow"]) - flow) ** 2 + (ky - display_y) ** 2
                 if best_d is None or dist < best_d:
                     best, best_d = i, dist
@@ -724,73 +734,6 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
 
 
 
-def _view_from_relayout(relayout, current):
-    if not isinstance(relayout, dict):
-        return None
-    view = dict(current or {})
-    if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
-        return {"cleared": True}
-    x_range = relayout.get("xaxis.range")
-    y_range = relayout.get("yaxis.range")
-    if x_range is None and "xaxis.range[0]" in relayout:
-        x_range = [relayout.get("xaxis.range[0]"), relayout.get("xaxis.range[1]")]
-    if y_range is None and "yaxis.range[0]" in relayout:
-        y_range = [relayout.get("yaxis.range[0]"), relayout.get("yaxis.range[1]")]
-    if x_range is None and y_range is None:
-        return None
-    if x_range is not None:
-        view["x"] = x_range
-    if y_range is not None:
-        view["y"] = y_range
-    view.pop("cleared", None)
-    return view
-
-
-@callback(
-    Output("chart-view-pending", "data"),
-    Output("zoom-settle", "disabled"),
-    Input("main-chart", "relayoutData"),
-    State("chart-view", "data"),
-    prevent_initial_call=True,
-)
-def note_chart_zoom(relayout, current):
-    """Record a zoom without rebuilding. The settle timer commits it."""
-    view = _view_from_relayout(relayout, current)
-    if view is None:
-        raise PreventUpdate
-    return {"view": None if view.get("cleared") else view, "t": __import__("time").time()}, False
-
-
-@callback(
-    Output("chart-view", "data"),
-    Output("zoom-settle", "disabled", allow_duplicate=True),
-    Input("zoom-settle", "n_intervals"),
-    State("chart-view-pending", "data"),
-    State("chart-view", "data"),
-    prevent_initial_call=True,
-)
-def commit_settled_zoom(n_intervals, pending, current):
-    """Resize handles only after zoom has been still for a moment."""
-    if not isinstance(pending, dict):
-        raise PreventUpdate
-    if __import__("time").time() - float(pending.get("t") or 0) < 0.45:
-        raise PreventUpdate
-    view = pending.get("view")
-    if view == current:
-        return no_update, True
-    return view, True
-
-
-@callback(
-    Output("chart-view", "data", allow_duplicate=True),
-    Input("unit-toggle", "value"),
-    prevent_initial_call=True,
-)
-def clear_view_on_unit_change(_units):
-    """A unit change rescales the axis, so the old zoom size is wrong."""
-    return None
-
-
 @callback(
     Output("main-chart", "style"),
     Input("knot-add-mode", "data"),
@@ -820,13 +763,12 @@ def chart_cursor(mode):
     Input("shape-settings", "data"),
     Input("added-trims", "data"),
     Input("group-visibility", "data"),
-    Input("chart-view", "data"),
     Input("knot-add-mode", "data"),
 )
 def update_main_chart(tab, units, px_data, comp_data,
                       show_baseline, band_pct, fit_settings,
                       test_vis, shape_settings, added_trims,
-                      group_vis, chart_view, add_mode):
+                      group_vis, add_mode):
     if tab == "combined":
         return no_update
     chart_type = tab or "head"
@@ -839,7 +781,7 @@ def update_main_chart(tab, units, px_data, comp_data,
                         shape_settings or {},
                         added_trims or [],
                         group_vis or {},
-                        chart_view, add_mode)
+                        None, add_mode)
 
 
 @callback(
@@ -1316,7 +1258,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if spline_on:
                         draw_knots = knots if _knots_are_absolute(knots) else _generate_knots(
                             fit_f, fit_y, poly_order, MAX_KNOTS)
-                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units, chart_view)
+                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units, chart_view, not (isinstance(add_mode, dict) and add_mode.get('action') == 'delete' and add_mode.get('armed')))
 
             elif len(all_flow) >= 3:
                 all_flow_arr = np.array(all_flow)
@@ -1400,7 +1342,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if spline_on:
                         draw_knots = knots if _knots_are_absolute(knots) else _generate_knots(
                             fit_f, fit_y, poly_order, MAX_KNOTS)
-                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units, chart_view)
+                        _add_spline_knots(fig, draw_knots, chart_type, gi, color, units, chart_view, not (isinstance(add_mode, dict) and add_mode.get('action') == 'delete' and add_mode.get('armed')))
 
     # -- 3. Virtual trim groups ----------------------------------------
     if added_trims and comp_data and px_data and show_baseline:
@@ -1439,7 +1381,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                                      gridcolor=GRID_COLOR,
                                      zeroline=False))
     if (isinstance(add_mode, dict) and add_mode.get("armed")
-            and add_mode.get("action") == "add"
+            and add_mode.get("action") in ("add", "delete")
             and add_mode.get("chart") == chart_type):
         xs = [float(t.x[i]) for t in fig.data if getattr(t, "x", None) is not None
               for i in range(len(t.x)) if t.x[i] is not None]
@@ -2318,7 +2260,7 @@ def _resolve_spline_fit(flow, y, knots, smoothing, min_fit, max_fit):
 
 
 def _add_spline_knots(fig, knots, chart_type, group_index, color, units,
-                      chart_view=None):
+                      chart_view=None, editable=True):
     if not _knots_are_absolute(knots):
         return
     flows, values = [], []
@@ -2387,7 +2329,7 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units,
                 fillcolor=shape_color,
                 opacity=0.55,
                 layer="below",
-                editable=True,
+                editable=editable,
                 name=f"spline-knot|{chart_type}|{group_index}|{i}",
             )
         else:
