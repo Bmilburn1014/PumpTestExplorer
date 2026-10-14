@@ -629,8 +629,17 @@ def place_clicked_knot(click, mode, store, figure, units):
         if isinstance(curve, int) and 0 <= curve < len(traces):
             name = str((traces[curve] or {}).get("name") or "")
         if name.startswith("spline-knots|"):
+            parts = name.split("|")
+            if len(parts) >= 3:
+                chart, group_key = parts[1], parts[2]
+                store.setdefault(chart, {})
+                store[chart].setdefault(group_key, {})
+                knots = _sorted_knots(store[chart][group_key].get("knots"))
+            raw_index = point.get("customdata", point.get("pointNumber"))
+            if isinstance(raw_index, (list, tuple)):
+                raw_index = raw_index[0]
             try:
-                index = int(point.get("pointNumber"))
+                index = int(raw_index)
             except (TypeError, ValueError):
                 index = -1
         if not (0 <= index < len(knots)):
@@ -1476,7 +1485,11 @@ def _build_chart(chart_type, units, px_data, comp_data,
                                      gridcolor=GRID_COLOR,
                                      zeroline=False))
     if (isinstance(add_mode, dict) and add_mode.get("armed")
-            and add_mode.get("action") in ("add", "delete")
+            and add_mode.get("action") == "delete"
+            and add_mode.get("chart") == chart_type):
+        _add_delete_targets(fig, shape_settings, chart_type, units)
+    elif (isinstance(add_mode, dict) and add_mode.get("armed")
+            and add_mode.get("action") == "add"
             and add_mode.get("chart") == chart_type):
         xs = [float(t.x[i]) for t in fig.data if getattr(t, "x", None) is not None
               for i in range(len(t.x)) if t.x[i] is not None]
@@ -1493,6 +1506,37 @@ def _build_chart(chart_type, units, px_data, comp_data,
                 name="spline-click-grid",
             ))
     return fig
+
+
+
+def _add_delete_targets(fig, shape_settings, chart_type, units):
+    """Top-most knot markers so a delete click cannot hit a drag handle."""
+    chart_ss = (shape_settings or {}).get(str(chart_type)) or {}
+    if not isinstance(chart_ss, dict):
+        return
+    for group_key, ss in chart_ss.items():
+        if not isinstance(ss, dict) or not ss.get("spline_on"):
+            continue
+        knots = _sorted_knots(ss.get("knots"))
+        if len(knots) < 2:
+            continue
+        flows = [k["flow"] for k in knots]
+        values = [k["y"] for k in knots]
+        if chart_type == "head" and units == "psi":
+            values = [v * FEET_TO_PSI for v in values]
+        symbols = ["diamond" if k.get("locked_x") else "circle" for k in knots]
+        colors = ["#334155" if k.get("locked_x") else "#b91c1c" for k in knots]
+        fig.add_trace(go.Scatter(
+            x=flows,
+            y=values,
+            mode="markers",
+            name=f"spline-knots|{chart_type}|{group_key}",
+            marker=dict(size=18, symbol=symbols, color=colors,
+                        line=dict(width=2, color="#111111")),
+            customdata=list(range(len(flows))),
+            hovertemplate="Click to delete<br>Q=%{x:.1f}<br>Value=%{y:.2f}<extra></extra>",
+            showlegend=False,
+        ))
 
 
 # =====================================================================
@@ -2407,6 +2451,8 @@ def _add_spline_knots(fig, knots, chart_type, group_index, color, units,
         y_span = max(float(np.ptp(values)), 1.0)
     rx = max(x_span / 700.0 * 5.5, x_span * 0.003)
     ry = max(y_span / 450.0 * 5.5, y_span * 0.004)
+    if not editable:
+        return
     for i, (flow, value) in enumerate(zip(flows, values)):
         shape_color = "#334155" if locked[i] else color
         if locked[i]:
