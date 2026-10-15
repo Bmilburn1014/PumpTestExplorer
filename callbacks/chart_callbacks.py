@@ -756,87 +756,6 @@ def ensure_spline_knots(store, comp_data, px_data, fit_settings,
 
 
 
-def _view_from_relayout(relayout, current):
-    if not isinstance(relayout, dict):
-        return None
-    view = dict(current or {})
-    if relayout.get("xaxis.autorange") or relayout.get("yaxis.autorange"):
-        return {"cleared": True}
-    x_range = relayout.get("xaxis.range")
-    y_range = relayout.get("yaxis.range")
-    if x_range is None and "xaxis.range[0]" in relayout:
-        x_range = [relayout.get("xaxis.range[0]"), relayout.get("xaxis.range[1]")]
-    if y_range is None and "yaxis.range[0]" in relayout:
-        y_range = [relayout.get("yaxis.range[0]"), relayout.get("yaxis.range[1]")]
-    if x_range is None and y_range is None:
-        return None
-    if x_range is not None:
-        view["x"] = [float(x_range[0]), float(x_range[1])]
-    if y_range is not None:
-        view["y"] = [float(y_range[0]), float(y_range[1])]
-    view.pop("cleared", None)
-    return view
-
-
-@callback(
-    Output("chart-view-pending", "data"),
-    Output("zoom-settle", "disabled"),
-    Input("main-chart", "relayoutData"),
-    State("chart-view", "data"),
-    prevent_initial_call=True,
-)
-def note_chart_zoom(relayout, current):
-    """Remember a zoom. Do not rebuild until it has settled."""
-    view = _view_from_relayout(relayout, current)
-    if view is None:
-        raise PreventUpdate
-    return {"view": None if view.get("cleared") else view, "t": __import__("time").time()}, False
-
-
-@callback(
-    Output("chart-view", "data"),
-    Output("zoom-settle", "disabled", allow_duplicate=True),
-    Input("zoom-settle", "n_intervals"),
-    State("chart-view-pending", "data"),
-    State("chart-view", "data"),
-    prevent_initial_call=True,
-)
-def commit_settled_zoom(_n, pending, current):
-    if not isinstance(pending, dict):
-        raise PreventUpdate
-    if __import__("time").time() - float(pending.get("t") or 0) < 0.6:
-        raise PreventUpdate
-    view = pending.get("view")
-    if _same_view(view, current):
-        return no_update, True
-    return view, True
-
-
-def _same_view(left, right):
-    if left == right:
-        return True
-    if not isinstance(left, dict) or not isinstance(right, dict):
-        return False
-    for key in ("x", "y"):
-        a, b = left.get(key), right.get(key)
-        if a is None and b is None:
-            continue
-        if not a or not b or len(a) != 2 or len(b) != 2:
-            return False
-        if abs(float(a[0]) - float(b[0])) > 1e-6 or abs(float(a[1]) - float(b[1])) > 1e-6:
-            return False
-    return True
-
-
-@callback(
-    Output("chart-view", "data", allow_duplicate=True),
-    Input("unit-toggle", "value"),
-    prevent_initial_call=True,
-)
-def clear_view_on_unit_change(_units):
-    return None
-
-
 @callback(
     Output("main-chart", "style"),
     Input("knot-add-mode", "data"),
@@ -867,12 +786,11 @@ def chart_cursor(mode):
     Input("added-trims", "data"),
     Input("group-visibility", "data"),
     Input("knot-add-mode", "data"),
-    Input("chart-view", "data"),
 )
 def update_main_chart(tab, units, px_data, comp_data,
                       show_baseline, band_pct, fit_settings,
                       test_vis, shape_settings, added_trims,
-                      group_vis, add_mode, chart_view):
+                      group_vis, add_mode):
     if tab == "combined":
         return no_update
     chart_type = tab or "head"
@@ -885,7 +803,7 @@ def update_main_chart(tab, units, px_data, comp_data,
                         shape_settings or {},
                         added_trims or [],
                         group_vis or {},
-                        chart_view, add_mode)
+                        None, add_mode)
 
 
 @callback(
@@ -1496,8 +1414,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
         ys = [float(t.y[i]) for t in fig.data if getattr(t, "y", None) is not None
               for i in range(len(t.y)) if t.y[i] is not None]
         if xs and ys:
-            gx = np.linspace(min(xs), max(xs), 36)
-            gy = np.linspace(min(ys), max(ys), 24)
+            gx = np.linspace(min(xs), max(xs), 16)
+            gy = np.linspace(min(ys), max(ys), 12)
             xx, yy = np.meshgrid(gx, gy)
             fig.add_trace(go.Scatter(
                 x=xx.ravel(), y=yy.ravel(), mode="markers",

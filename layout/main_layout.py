@@ -101,7 +101,7 @@ def build_layout():
                 ],
             ),
             dcc.Interval(id="status-interval",
-                         interval=500, n_intervals=0),
+                         interval=1000, n_intervals=0),
         ],
     )
 

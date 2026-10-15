@@ -763,6 +763,10 @@ def _comparison_thread(px_path, date_start, date_end,
 # 2b. POLL — interval checks thread, updates everything
 # ═════════════════════════════════════════════════════════════
 
+_last_status = {"key": None}
+
+
+
 @callback(
     # Status bar
     Output("status-line-1", "children"),
@@ -840,7 +844,11 @@ def poll_job(n):
     except ImportError:
         pass
 
-    # Neither thread finished — update status/progress only
+    # Neither thread finished. Skip the redraw if nothing changed.
+    key = (line1, line2, pct, label, bar_class)
+    if key == _last_status["key"]:
+        raise PreventUpdate
+    _last_status["key"] = key
     return no_results
 
 
@@ -927,26 +935,17 @@ def _serialize_results(result):
         for t in grp.tests:
             tests.append({
                 "test_id": t.test_id,
-                "source_index": t.source_index,
                 "test_date": t.test_date,
                 "trim_diameter": float(t.trim_diameter) if t.trim_diameter else None,
                 "rpm": float(t.rpm) if t.rpm else None,
                 "pass_fail": t.pass_fail or "",
-                "num_stages": t.num_stages,
                 "filing_info": t.filing_info or "",
-                "upper_diameter": float(t.upper_diameter) if t.upper_diameter else None,
-                "lower_diameter": float(t.lower_diameter) if t.lower_diameter else None,
                 "is_polished": bool(t.is_polished),
-                "mixed_trim":bool(getattr(t, "mixed_trim", False)),
-                "raw_flow": _to_list(t.raw_flow),
-                "raw_head": _to_list(t.raw_head),
-                "raw_power": _to_list(t.raw_power),
-                "raw_efficiency": _to_list(t.raw_efficiency),
+                "mixed_trim": bool(getattr(t, "mixed_trim", False)),
                 "scaled_flow": _to_list(t.scaled_flow),
                 "scaled_head": _to_list(t.scaled_head),
                 "scaled_power": _to_list(t.scaled_power),
                 "scaled_efficiency": _to_list(t.scaled_efficiency),
-                "affinity_warning": t.affinity_warning or "",
                 "has_data": t.scaled_flow is not None,
             })
         bt = grp.baseline_trim  # TrimCurve or None
