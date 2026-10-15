@@ -640,6 +640,7 @@ def load_px_file(n_clicks, path):
     Output("run-btn", "disabled"),
     Output("run-btn", "children"),
     Output("run-status", "children"),
+    Output("status-interval", "disabled"),
     Input("run-btn", "n_clicks"),
     State("px-file-path", "value"),
     State("date-start", "value"),
@@ -654,11 +655,11 @@ def load_px_file(n_clicks, path):
 def start_comparison(n_clicks, px_path, date_start, date_end,
                      trim_tol, head_col, power_col, test_iter, vert_parts):
     if not px_path:
-        return no_update, no_update, "⚠ Load a PX file first."
+        return no_update, no_update, "⚠ Load a PX file first.", no_update
 
     with _lock:
         if _state["running"]:
-            return no_update, no_update, "⚠ Already running…"
+            return no_update, no_update, "⚠ Already running…", no_update
 
     _reset()
     with _lock:
@@ -686,7 +687,7 @@ def start_comparison(n_clicks, px_path, date_start, date_end,
     )
     t.start()
 
-    return True, "Running…", "⏳ Running comparison…"
+    return True, "Running…", "⏳ Running comparison…", False
 
 
 def _comparison_thread(px_path, date_start, date_end,
@@ -778,6 +779,7 @@ def _comparison_thread(px_path, date_start, date_end,
     Output("results-summary", "className", allow_duplicate=True),
     # PX data (manual mode writes synthetic baseline here)
     Output("px-data", "data", allow_duplicate=True),
+    Output("status-interval", "disabled", allow_duplicate=True),
     # Trigger
     Input("status-interval", "n_intervals"),
     prevent_initial_call=True,
@@ -800,7 +802,7 @@ def poll_job(n):
     no_results = (line1, line2,
                   bar_style, label, bar_class,
                   no_update, no_update, no_update, no_update,
-                  no_update)
+                  no_update, False)
 
     # ── Check auto-mode thread ────────────────────────────
     with _lock:
@@ -820,12 +822,12 @@ def poll_job(n):
                     {"error": True}, f"✗ Error: {error}",
                     [html.Div(f"✗ {error}",
                               style={"color": "#d93025"})],
-                    "summary-card", no_update)
+                    "summary-card", no_update, True)
 
         return (line1, line2,
                 bar_style, label, bar_class,
                 result, status, summary,
-                "summary-card", no_update)
+                "summary-card", no_update, True)
 
     # ── Check manual-mode thread ──────────────────────────
     try:
@@ -836,7 +838,7 @@ def poll_job(n):
                     bar_style, label, bar_class,
                     mm["result"], mm["status"],
                     mm["summary"], "summary-card",
-                    mm.get("px_data", no_update))
+                    mm.get("px_data", no_update), True)
     except ImportError:
         pass
 
