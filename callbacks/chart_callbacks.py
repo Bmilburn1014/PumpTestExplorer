@@ -15,7 +15,7 @@
 
 import pandas as pd
 import numpy as np
-from dash import callback, Input, Output, State, ALL, no_update, ctx, Patch
+from dash import callback, clientside_callback, Input, Output, State, ALL, no_update, ctx, Patch
 import plotly.graph_objects as go
 from dash.exceptions import PreventUpdate
 from layout.main_layout import GROUP_COLORS, MAX_KNOTS
@@ -409,9 +409,27 @@ def _to_display_y(values, chart_type, units):
 
 
 
+clientside_callback(
+    """
+    function(relayout) {
+        if (!relayout) return window.dash_clientside.no_update;
+        var keys = Object.keys(relayout);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (key === "shapes" || key.indexOf("shapes[") === 0) return relayout;
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("shape-drag-store", "data"),
+    Input("main-chart", "relayoutData"),
+    prevent_initial_call=True,
+)
+
+
 @callback(
     Output("shape-settings", "data", allow_duplicate=True),
-    Input("main-chart", "relayoutData"),
+    Input("shape-drag-store", "data"),
     State("main-chart", "figure"),
     State("shape-settings", "data"),
     State("unit-toggle", "value"),

@@ -34,6 +34,7 @@ def build_layout():
             dcc.Store(id="test-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="shape-settings", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
             dcc.Store(id="knot-drag-store", data=None),
+            dcc.Store(id="shape-drag-store", data=None),
             dcc.Store(id="knot-add-mode", data={"armed": False}),
             dcc.Store(id="knot-place-store", data=None),
             dcc.Store(id="chart-view", data=None),
