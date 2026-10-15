@@ -95,6 +95,7 @@ def register_manual_callbacks(app):
         Output(manual_id("index-status"), "children"),
         Output(manual_id("index-status"), "style"),
         Output(manual_id("part-num-row"), "style"),
+        Output("job-active", "data", allow_duplicate=True),
         Input(manual_id("pump-type"), "value"),
         prevent_initial_call=True,
     )
@@ -104,7 +105,7 @@ def register_manual_callbacks(app):
                       else {"display": "none"})
         if not pt:
             return ([], None, True, "Select pump type first…",
-                    "", {"display": "none"}, part_style)
+                    "", {"display": "none"}, part_style, no_update)
 
         with _idx_lock:
             _idx_state.update(running=True, done=False,
@@ -119,26 +120,27 @@ def register_manual_callbacks(app):
                 f"⏳ Loading {labels.get(pt, pt)} index…",
                 {"display": "block", "color": "#1a73e8",
                  "fontWeight": "600"},
-                part_style)
+                part_style, True)
 
     # 2b. INDEX POLLER ────────────────────────────────────────
 
     @app.callback(
         Output(manual_id("index-ready"), "data"),
+        Output("job-active", "data", allow_duplicate=True),
         Input("status-interval", "n_intervals"),
         prevent_initial_call=True,
     )
     def poll_index(n):
         with _idx_lock:
             if not _idx_state["done"]:
-                return no_update
+                return no_update, no_update
             pt = _idx_state["pump_type"]
             err = _idx_state["error"]
             _idx_state["running"] = False
             _idx_state["done"] = False
-        if err:
-            return {"pump_type": pt, "ready": False, "error": err}
-        return {"pump_type": pt, "ready": True, "error": None}
+        payload = ({"pump_type": pt, "ready": False, "error": err} if err
+                   else {"pump_type": pt, "ready": True, "error": None})
+        return payload, False
 
     # 2c. MODEL DROPDOWN — index-ready + baseline dates ───────
 
@@ -184,6 +186,7 @@ def register_manual_callbacks(app):
         Output(manual_id("compare-btn"), "disabled"),
         Output(manual_id("compare-btn"), "children"),
         Output(manual_id("status"), "children"),
+        Output("job-active", "data", allow_duplicate=True),
         Input(manual_id("compare-btn"), "n_clicks"),
         State(manual_id("pump-type"), "value"),
         State(manual_id("bl-model"), "value"),
@@ -206,15 +209,15 @@ def register_manual_callbacks(app):
         trim_tol, head_col, power_col,
     ):
         if not n_clicks:
-            return no_update, no_update, no_update
+            return no_update, no_update, no_update, no_update
         if not pump_type:
-            return False, "Run Manual Compare", "⚠ Select a pump type."
+            return False, "Run Manual Compare", "⚠ Select a pump type.", no_update
         if not model:
-            return False, "Run Manual Compare", "⚠ Select a model."
+            return False, "Run Manual Compare", "⚠ Select a model.", no_update
 
         with _lock:
             if _mm_state["running"]:
-                return True, "Running…", "Already running."
+                return True, "Running…", "Already running.", no_update
             _mm_state.update(running=True, done=False,
                              result=None, error=None)
 
@@ -227,7 +230,7 @@ def register_manual_callbacks(app):
                   power_col or "power_bowl_dyno"),
             daemon=True).start()
 
-        return True, "Running…", "Manual comparison started…"
+        return True, "Running…", "Manual comparison started…", True
 
     # 3b. RE-ENABLE BUTTON ────────────────────────────────────
 

@@ -41,6 +41,7 @@ def build_layout():
             dcc.Interval(id="zoom-settle", interval=200, disabled=True),
             dcc.Store(id="added-trims", data=[]),
             dcc.Store(id="group-visibility", data={"head":{}, "power":{}, "active": "head"}, storage_type="session"),
+            dcc.Store(id="job-active", data=False),
 
             # -- Export helpers ------------------------------------
             dcc.Interval(id="cache-refresh-interval",
@@ -101,7 +102,8 @@ def build_layout():
                 ],
             ),
             dcc.Interval(id="status-interval",
-                         interval=500, n_intervals=0),
+                         interval=500, n_intervals=0,
+                         disabled=True),
         ],
     )
 
