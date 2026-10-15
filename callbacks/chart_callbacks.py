@@ -444,8 +444,71 @@ clientside_callback(
             }
             return out;
         }
+        var pointerDown = false;
+        var fitTimer = null;
+        function fitShapes(gd) {
+            if (!gd || !gd._fullLayout || gd.__fittingShapes || pointerDown) return;
+            var xa = gd._fullLayout.xaxis;
+            var ya = gd._fullLayout.yaxis;
+            if (!xa || !ya || !xa._length || !ya._length) return;
+            var rx = Math.abs(xa.range[1] - xa.range[0]) / xa._length * 5.5;
+            var ry = Math.abs(ya.range[1] - ya.range[0]) / ya._length * 5.5;
+            if (!(rx > 0) || !(ry > 0)) return;
+            var shapes = (gd.layout && gd.layout.shapes) || [];
+            var updates = {};
+            for (var i = 0; i < shapes.length; i++) {
+                var s = shapes[i];
+                if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
+                if (s.type === "path") {
+                    var nums = String(s.path || "").match(/[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/g) || [];
+                    if (nums.length < 4) continue;
+                    var xs = [], ys = [];
+                    for (var n = 0; n < nums.length; n++) {
+                        if (n % 2) ys.push(+nums[n]); else xs.push(+nums[n]);
+                    }
+                    var cx = xs.reduce(function(a, b) { return a + b; }, 0) / xs.length;
+                    var cy = ys.reduce(function(a, b) { return a + b; }, 0) / ys.length;
+                    var path = "M " + cx + "," + (cy + ry)
+                        + " L " + (cx + rx) + "," + cy
+                        + " L " + cx + "," + (cy - ry)
+                        + " L " + (cx - rx) + "," + cy + " Z";
+                    if (path !== s.path) updates["shapes[" + i + "].path"] = path;
+                } else {
+                    var cx2 = (+s.x0 + +s.x1) / 2;
+                    var cy2 = (+s.y0 + +s.y1) / 2;
+                    if (Math.abs(+s.x1 - +s.x0 - 2 * rx) > rx * 0.08) {
+                        updates["shapes[" + i + "].x0"] = cx2 - rx;
+                        updates["shapes[" + i + "].x1"] = cx2 + rx;
+                        updates["shapes[" + i + "].y0"] = cy2 - ry;
+                        updates["shapes[" + i + "].y1"] = cy2 + ry;
+                    }
+                }
+            }
+            if (!Object.keys(updates).length || !window.Plotly) return;
+            gd.__fittingShapes = true;
+            var done = window.Plotly.relayout(gd, updates);
+            if (done && done.then) {
+                done.then(function() { gd.__fittingShapes = false; },
+                          function() { gd.__fittingShapes = false; });
+            } else {
+                gd.__fittingShapes = false;
+            }
+        }
+        function scheduleFit(gd) {
+            clearTimeout(fitTimer);
+            fitTimer = setTimeout(function() { fitShapes(gd); }, 160);
+        }
+        function hookPlot(gd) {
+            if (!gd || gd.__knotFitHooked) return;
+            gd.__knotFitHooked = true;
+            gd.on("plotly_relayout", function() { scheduleFit(gd); });
+            gd.on("plotly_afterplot", function() { scheduleFit(gd); });
+            scheduleFit(gd);
+        }
+        setInterval(function() { hookPlot(plotNode()); }, 500);
         var before = null;
         document.addEventListener("pointerdown", function(evt) {
+            pointerDown = true;
             var gd = plotNode();
             if (!gd) return;
             var box = gd.getBoundingClientRect();
@@ -457,6 +520,8 @@ clientside_callback(
             before = JSON.stringify(centers(gd));
         }, true);
         document.addEventListener("pointerup", function() {
+            pointerDown = false;
+            scheduleFit(plotNode());
             var gd = plotNode();
             var snap = before;
             before = null;
