@@ -395,8 +395,8 @@ def update_vertical_impeller_part_options(
 # ═════════════════════════════════════════════════════════════
 
 @callback(
-    Output("px-file-path", "value", allow_duplicate=True),
-    Output("px-status", "children", allow_duplicate=True),
+    Output("px-file-path", "value"),
+    Output("px-status", "children"),
     Input("browse-px-btn", "n_clicks"),
     prevent_initial_call=True,
 )
@@ -431,7 +431,7 @@ def browse_for_px_file(n_clicks):
             # console that otherwise flashes when running as .exe
             CREATE_NO_WINDOW = 0x08000000
             result = subprocess.run(
-                ["powershell", "-WindowStyle", "Hidden",
+                ["powershell", "-STA", "-WindowStyle", "Hidden",
                  "-Command", ps_script],
                 capture_output=True, text=True, timeout=120,
                 creationflags=CREATE_NO_WINDOW,
