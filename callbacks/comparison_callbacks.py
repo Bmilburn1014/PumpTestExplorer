@@ -25,6 +25,7 @@ from layout.main_layout import build_trim_group_card
 from data.log_buffer import log as _log
 from data.pump_classifier import classify_pump, build_model_search_pattern
 from config import INDEX_FILES
+from dash.exceptions import PreventUpdate
 
 _DATA_SOURCE = None
 
