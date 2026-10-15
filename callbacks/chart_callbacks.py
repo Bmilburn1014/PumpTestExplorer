@@ -886,12 +886,8 @@ def update_combined_charts(tab, units, px_data, comp_data,
 
     # Shared x-axis label on bottom only
     combined.update_xaxes(title_text="Flow (GPM)", row=2, col=1,
-                          gridcolor=GRID_COLOR, zeroline=False,
-                          showspikes=True, spikemode="across",
-                          spikethickness=1, spikecolor="#aaa")
+                          gridcolor=GRID_COLOR, zeroline=False)
     combined.update_xaxes(gridcolor=GRID_COLOR, zeroline=False,
-                          showspikes=True, spikemode="across",
-                          spikethickness=1, spikecolor="#aaa",
                           row=1, col=1)
 
     combined.update_layout(
@@ -1123,7 +1119,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                           else dict(width=0.5, color="#fff"))
                 polished_tag = "  ◆ Polished" if is_polished else ""
 
-                fig.add_trace(go.Scatter(
+                fig.add_trace(go.Scattergl(
                     x=flow_arr, y=y_arr, mode="markers",
                     name=f'{tid[:18]}',
                     marker=dict(color=color, size=6 if is_polished else 5,
@@ -1286,7 +1282,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if chart_type == "efficiency":
                         y_fit = np.clip(y_fit, 0, 100)
 
-                    fig.add_trace(go.Scatter(
+                    fig.add_trace(go.Scattergl(
                         x=x_fit, y=y_fit, mode="lines",
                         name=f'{nom_dia}" fit',
                         line=dict(color=color, width=2.5, dash="solid"),
@@ -1370,7 +1366,7 @@ def _build_chart(chart_type, units, px_data, comp_data,
                     if chart_type == "efficiency":
                         y_fit = np.clip(y_fit, 0, 100)
 
-                    fig.add_trace(go.Scatter(
+                    fig.add_trace(go.Scattergl(
                         x=x_fit, y=y_fit, mode="lines",
                         name=f'{nom_dia}" fit (n={len(fit_f)})',
                         line=dict(color=color, width=2.5, dash="solid"),
@@ -1400,12 +1396,8 @@ def _build_chart(chart_type, units, px_data, comp_data,
         plot_bgcolor=CHART_BG,
         paper_bgcolor="#fff",
         margin=dict(l=50, r=15, t=10, b=45),
-        xaxis=dict(gridcolor=GRID_COLOR, zeroline=False,
-                   showspikes=True, spikemode="across",
-                   spikethickness=1, spikecolor="#aaa"),
-        yaxis=dict(gridcolor=GRID_COLOR, zeroline=False,
-                   showspikes=True, spikemode="across",
-                   spikethickness=1, spikecolor="#aaa"),
+        xaxis=dict(gridcolor=GRID_COLOR, zeroline=False),
+        yaxis=dict(gridcolor=GRID_COLOR, zeroline=False),
         legend=dict(font=dict(size=10),
                     bgcolor="rgba(255,255,255,0.85)",
                     bordercolor="#ddd", borderwidth=1,
@@ -2211,7 +2203,7 @@ def _render_virtual_groups(fig, chart_type, units, y_title,
                     if chart_type == "efficiency":
                         y_fit = np.clip(y_fit, 0, 100)
 
-                    fig.add_trace(go.Scatter(
+                    fig.add_trace(go.Scattergl(
                         x=x_fit, y=y_fit, mode="lines",
                         name=f'Added {v_dia:.3f}" fit ({len(vf_fit)} pts)',
                         line=dict(color=color, width=2.5, dash="solid"),

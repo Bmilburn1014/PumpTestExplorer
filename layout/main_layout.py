@@ -353,9 +353,11 @@ def _center_panel():
             "annotationText": False,
             "legendText": False,
         },
-        "modeBarButtonsToAdd": [
-            "drawline", "drawrect", "eraseshape",
+        "modeBarButtonsToRemove": [
+            "lasso2d", "select2d",
         ],
+        "doubleClick": "reset",
+        "showTips": False,
     }
     return html.Div(
         className="center-panel",
