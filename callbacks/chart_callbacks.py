@@ -411,18 +411,71 @@ def _to_display_y(values, chart_type, units):
 
 clientside_callback(
     """
-    function(relayout) {
-        if (!relayout) return window.dash_clientside.no_update;
-        var keys = Object.keys(relayout);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            if (key === "shapes" || key.indexOf("shapes[") === 0) return relayout;
+    function(fig) {
+        if (window.__knotDragOnly) return window.dash_clientside.no_update;
+        window.__knotDragOnly = true;
+        function plotNode() {
+            var root = document.getElementById("main-chart");
+            if (!root) return null;
+            return root.classList.contains("js-plotly-plot")
+                ? root : root.querySelector(".js-plotly-plot");
         }
+        function centers(gd) {
+            var shapes = (gd._fullLayout && gd._fullLayout.shapes) || [];
+            var out = [];
+            for (var i = 0; i < shapes.length; i++) {
+                var s = shapes[i];
+                if (!s || String(s.name || "").indexOf("spline-knot|") !== 0) continue;
+                var flow, y;
+                if (s.path) {
+                    var nums = String(s.path).match(/[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/g) || [];
+                    if (nums.length < 4) continue;
+                    var xs = [], ys = [];
+                    for (var n = 0; n < nums.length; n++) {
+                        if (n % 2) ys.push(+nums[n]); else xs.push(+nums[n]);
+                    }
+                    flow = xs.reduce(function(a, b) { return a + b; }, 0) / xs.length;
+                    y = ys.reduce(function(a, b) { return a + b; }, 0) / ys.length;
+                } else {
+                    flow = (+s.x0 + +s.x1) / 2;
+                    y = (+s.y0 + +s.y1) / 2;
+                }
+                out.push({name: s.name, flow: flow, y: y});
+            }
+            return out;
+        }
+        var before = null;
+        document.addEventListener("pointerdown", function(evt) {
+            var gd = plotNode();
+            if (!gd) return;
+            var box = gd.getBoundingClientRect();
+            if (evt.clientX < box.left || evt.clientX > box.right ||
+                evt.clientY < box.top || evt.clientY > box.bottom) {
+                before = null;
+                return;
+            }
+            before = JSON.stringify(centers(gd));
+        }, true);
+        document.addEventListener("pointerup", function() {
+            var gd = plotNode();
+            var snap = before;
+            before = null;
+            if (!gd || !snap) return;
+            setTimeout(function() {
+                var after = centers(gd);
+                if (!after.length || JSON.stringify(after) === snap) return;
+                if (window.dash_clientside && window.dash_clientside.set_props) {
+                    window.dash_clientside.set_props("shape-drag-store", {
+                        data: {shapes: after, t: Date.now()}
+                    });
+                }
+            }, 40);
+        }, true);
         return window.dash_clientside.no_update;
     }
     """,
-    Output("shape-drag-store", "data"),
-    Input("main-chart", "relayoutData"),
+    Output("shape-drag-store", "data", allow_duplicate=True),
+    Input("main-chart", "figure"),
     prevent_initial_call=True,
 )
 
@@ -436,52 +489,21 @@ clientside_callback(
     prevent_initial_call=True,
 )
 
-def apply_shape_drag(relayout, figure, store, units):
-    """Save a Plotly shape drag. Zoom and pan relayouts are ignored."""
-    if not isinstance(relayout, dict) or not figure:
+def apply_shape_drag(payload, figure, store, units):
+    """Save a released point drag. Zoom never reaches this callback."""
+    shapes = (payload or {}).get("shapes") if isinstance(payload, dict) else None
+    if not shapes:
         raise PreventUpdate
-    if not any(isinstance(k, str) and (k == "shapes" or k.startswith("shapes["))
-               for k in relayout):
-        raise PreventUpdate
-    shapes = list(((figure.get("layout") or {}).get("shapes")) or [])
-    if isinstance(relayout.get("shapes"), list):
-        shapes = [dict(s) for s in relayout["shapes"]]
-    moved = {}
-    for key, value in relayout.items():
-        if not isinstance(key, str) or not key.startswith("shapes["):
-            continue
-        try:
-            index = int(key.split("[", 1)[1].split("]", 1)[0])
-            prop = key.split(".", 1)[1]
-        except (IndexError, ValueError):
-            continue
-        moved.setdefault(index, {})[prop] = value
-    if not moved and not isinstance(relayout.get("shapes"), list):
-        raise PreventUpdate
-
     updates = {}
-    indexes = list(moved) if moved else list(range(len(shapes)))
-    for index in indexes:
-        if index >= len(shapes):
-            continue
-        shape = dict(shapes[index] or {})
-        shape.update(moved.get(index, {}))
-        parts = str(shape.get("name") or "").split("|")
+    for shape in shapes:
+        parts = str((shape or {}).get("name") or "").split("|")
         if len(parts) != 4 or parts[0] != "spline-knot":
             continue
         _, chart, group_key, point = parts
         try:
             point = int(point)
-            if shape.get("path"):
-                nums = [float(n) for n in __import__("re").findall(
-                    r"[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?", str(shape["path"]))]
-                if len(nums) < 4:
-                    continue
-                flow = sum(nums[0::2]) / (len(nums) // 2)
-                value = sum(nums[1::2]) / (len(nums) // 2)
-            else:
-                flow = (float(shape["x0"]) + float(shape["x1"])) / 2.0
-                value = (float(shape["y0"]) + float(shape["y1"])) / 2.0
+            flow = float(shape["flow"])
+            value = float(shape["y"])
         except (KeyError, TypeError, ValueError):
             continue
         if chart == "head" and units == "psi":
@@ -1396,8 +1418,10 @@ def _build_chart(chart_type, units, px_data, comp_data,
         plot_bgcolor=CHART_BG,
         paper_bgcolor="#fff",
         margin=dict(l=50, r=15, t=10, b=45),
-        xaxis=dict(gridcolor=GRID_COLOR, zeroline=False),
-        yaxis=dict(gridcolor=GRID_COLOR, zeroline=False),
+        xaxis=dict(gridcolor=GRID_COLOR, zeroline=False,
+                   nticks=8, automargin=False),
+        yaxis=dict(gridcolor=GRID_COLOR, zeroline=False,
+                   nticks=8, automargin=False),
         legend=dict(font=dict(size=10),
                     bgcolor="rgba(255,255,255,0.85)",
                     bordercolor="#ddd", borderwidth=1,
