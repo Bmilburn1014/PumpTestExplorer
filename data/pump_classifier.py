@@ -62,7 +62,7 @@ INLINE_PATTERN = re.compile(
 # AE and AEF are the same family. TU and TUT are different models.
 HORIZONTAL_PATTERN = re.compile(
     r'^\s*(?:[A-Za-z]\s*)?(\d+)\s*(AEF|AE|TUT|TU)\s*(\d+)'
-    r'\s*([A-Za-z])?(?:\s*-\s*(\d+))?\s*$',
+    r'\s*([A-Za-z]\d*)?(?:\s*-\s*(\d+))?\s*$',
     re.IGNORECASE,
 )
 
@@ -463,7 +463,7 @@ def build_model_search_pattern(curve_number: str) -> str:
         # Allow an optional variant letter and speed suffix in the index.
         return (
             rf'^\s*[A-Za-z]?\s*{re.escape(discharge)}\s*{family}\s*'
-            rf'{re.escape(casing)}\s*[A-Za-z]?\s*(?:-\s*\d+)?\s*$'
+            rf'{re.escape(casing)}\s*(?:[A-Za-z]\d*)?\s*(?:-\s*\d+)?\s*$'
         )
 
     # End suction pump
