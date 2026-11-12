@@ -37,7 +37,58 @@
 
 import os
 import re
+from datetime import datetime
 import numpy as np
+import pandas as pd
+
+
+def _excel_serial(dt):
+    """Turn an Excel date back into the number that was stored in the cell."""
+    delta = dt - datetime(1899, 12, 30)
+    return delta.days + delta.seconds / 86400.0 + delta.microseconds / 86400e6
+
+
+def _safe_float(value, default=0.0):
+    """Convert index and test values without dying on an Excel date string."""
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        if isinstance(value, float) and np.isnan(value):
+            return default
+        return float(value)
+    if hasattr(value, "to_pydatetime"):
+        try:
+            return _excel_serial(value.to_pydatetime())
+        except Exception:
+            return default
+    text = str(value).strip()
+    if not text or text.lower() in ("nan", "none", "nat"):
+        return default
+    try:
+        return float(text)
+    except ValueError:
+        pass
+    stamp = text[:26]
+    for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+        try:
+            return _excel_serial(datetime.strptime(stamp, fmt))
+        except ValueError:
+            continue
+    return default
+
+
+def _series_to_float(series):
+    """Numeric series. Excel date cells become their original serial number."""
+    if pd.api.types.is_datetime64_any_dtype(series):
+        epoch = pd.Timestamp("1899-12-30")
+        return (series - epoch).dt.total_seconds() / 86400.0
+    numeric = pd.to_numeric(series, errors="coerce")
+    missing = numeric.isna() & series.notna()
+    if missing.any():
+        numeric = numeric.copy()
+        numeric.loc[missing] = series.loc[missing].map(
+            lambda value: _safe_float(value, default=np.nan))
+    return numeric
 import pandas as pd
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -1169,7 +1220,7 @@ class ComparisonEngine:
                     except (ValueError, TypeError):
                         pass
 
-            rpm_val = float(row.get("rpm", 0) or 0)
+            rpm_val = _safe_float(row.get("rpm", 0))
             model_val = str(row.get("pump_model", ""))
 
             mixed_impellers = False
@@ -1196,8 +1247,8 @@ class ComparisonEngine:
                 trim_diameter=trim_val,
                 test_date=str(row.get("test_date", "")),
                 rpm=rpm_val,
-                rated_flow=float(row.get("rated_flow", 0) or 0),
-                rated_head=float(row.get("rated_head", 0) or 0),
+                rated_flow=_safe_float(row.get("rated_flow", 0)),
+                rated_head=_safe_float(row.get("rated_head", 0)),
                 pass_fail=str(row.get("pass_fail", "")),
                 source_index=classification.index_name,
                 num_stages=num_stages,
@@ -1636,7 +1687,7 @@ class ComparisonEngine:
             t(f"    ✗ no 'flow' column")
             return
 
-        flow_series = pd.to_numeric(detail["flow"], errors="coerce")
+        flow_series = _series_to_float(detail["flow"])
         valid_mask = flow_series.notna() & (flow_series >= 0)
 
         flow = flow_series[valid_mask].values.astype(float)
@@ -1649,7 +1700,7 @@ class ComparisonEngine:
 
         head = None
         if head_col in detail.columns:
-            h = pd.to_numeric(detail[head_col], errors="coerce")
+            h = _series_to_float(detail[head_col])
             head = h[valid_mask].values.astype(float)
             t(f"    head ('{head_col}'): {len(head)} pts")
             t(f"      values: {[f'{v:.2f}' for v in head]}")
@@ -1659,7 +1710,7 @@ class ComparisonEngine:
         power = None
         actual_power_col = power_col
         if power_col in detail.columns:
-            p = pd.to_numeric(detail[power_col], errors="coerce")
+            p = _series_to_float(detail[power_col])
             p_vals = p[valid_mask].values.astype(float)
             # Check if dyno data is actually usable (not all zero/negative)
             if np.any(p_vals > 0):
@@ -1678,7 +1729,7 @@ class ComparisonEngine:
                 fallback_col = power_col.replace("motor", "dyno")
 
             if fallback_col and fallback_col in detail.columns:
-                p = pd.to_numeric(detail[fallback_col], errors="coerce")
+                p = _series_to_float(detail[fallback_col])
                 p_vals = p[valid_mask].values.astype(float)
                 if np.any(p_vals > 0):
                     power = p_vals
@@ -1694,14 +1745,14 @@ class ComparisonEngine:
         eff_col = actual_power_col.replace("power_", "eff_")
         efficiency = None
         if eff_col in detail.columns:
-            e = pd.to_numeric(detail[eff_col], errors="coerce")
+            e = _series_to_float(detail[eff_col])
             efficiency = e[valid_mask].values.astype(float)
             t(f"    efficiency ('{eff_col}'): {len(efficiency)} pts")
             t(f"      values: {[f'{v:.2f}' for v in efficiency]}")
         else:
             # Fallback: try eff_overall
             if "eff_overall" in detail.columns:
-                e = pd.to_numeric(detail["eff_overall"], errors="coerce")
+                e = _series_to_float(detail["eff_overall"])
                 efficiency = e[valid_mask].values.astype(float)
                 t(f"    efficiency ('eff_overall' fallback): {len(efficiency)} pts")
             else:
