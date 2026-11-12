@@ -30,11 +30,10 @@
 #     Model format: [letter]##AAA##-#########
 #       - Optional leading letter prefix (e.g., "A")
 #       - 1-2 digit bowl diameter (e.g., 8, 12)
-#       - 2-4 letter bowl model name (e.g., MD, AES, AESJ)
+#       - 2-4 letter bowl model name (e.g., MD, HXB)
 #       - 1-2 digit capacity marking (e.g., 14)
 #       - Dash then impeller part number (e.g., 123456789)
-#     Examples: A12AES14-504291814, 12AES14-504291814,
-#               8MD12-601234567, 10AESJ16-504300000
+#     Examples: 8MD12-601234567, A12HXB14-504291814
 #     Index: NEWTESTLISTv.2  (same as generic vertical)
 #     Trim column: "impeller_trim"
 #     Extra: bowl_diameter and impeller_part_number used for filtering
@@ -61,7 +60,8 @@ INLINE_PATTERN = re.compile(
 # Longest code first so TUT is not read as TU, and AEF is not read as AE.
 # AE and AEF are the same family. TU and TUT are different models.
 HORIZONTAL_PATTERN = re.compile(
-    r'^\s*(?:[A-Za-z]\s*)?(\d+)\s*(AEF|AE|TUT|TU)\s*(\d+)'
+    # AES is treated as AE: an extra letter after AE is a typo, not vertical.
+    r'^\s*(?:[A-Za-z]\s*)?(\d+)\s*(AEF|AE[A-Za-z]*|TUT|TU)\s*(\d+)'
     r'\s*([A-Za-z]\d*)?(?:\s*-\s*(\d+))?\s*$',
     re.IGNORECASE,
 )
@@ -79,7 +79,7 @@ VERTICAL_PATTERN = re.compile(
     r'^(?P<prefix>[A-Za-z])?'
     r'(?P<bowl>\d{1,2})'
     # Horizontal families are not vertical models.
-    r'(?P<letters>(?!(?:AEF|AE|TUT|TU)(?![A-Za-z]))[A-Za-z]+)'
+    r'(?P<letters>(?!(?:AEF|AE|TUT|TU))[A-Za-z]+)'
     r'(?P<trailing>\d{0,2}[A-Za-z]?)'
     r'(?:-(?P<suffix>[A-Za-z0-9]+))?$',
     re.IGNORECASE,
@@ -113,6 +113,20 @@ _KNOWN_BASE_MODELS = {"MA", "HXB", "GLME", "HH", "HHOH", "MB", "MD", "MC", "HXC"
 
 # -- Known horizontal model codes (used to disambiguate from VT) --------
 _HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT"}
+
+
+def _horizontal_code(code: str) -> str:
+    """Map a matched code to its family. AES and similar AE typos are AE."""
+    code = (code or "").upper()
+    if code.startswith("AEF"):
+        return "AEF"
+    if code.startswith("AE"):
+        return "AE"
+    if code.startswith("TUT"):
+        return "TUT"
+    if code.startswith("TU"):
+        return "TU"
+    return code
 
 
 def _strip_perf_suffix(letters: str) -> tuple[str, str]:
@@ -181,7 +195,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     match = HORIZONTAL_PATTERN.match(text)
     if match:
         discharge = match.group(1)
-        model_code = match.group(2).upper()
+        model_code = _horizontal_code(match.group(2))
         casing = match.group(3)
         variant = match.group(4) or ""
         speed_str = match.group(5)
@@ -334,7 +348,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
             "discharge_size": float(m.group(1)),
             "bowl_or_casing": int(m.group(3)),
             "model_name": None,
-            "model_code": m.group(2).upper(),
+            "model_code": _horizontal_code(m.group(2)),
             "series": None,
             "variant": m.group(4) or "",
             "capacity": None,
