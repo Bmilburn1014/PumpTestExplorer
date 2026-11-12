@@ -522,5 +522,23 @@ def build_model_search_pattern(curve_number: str) -> str:
         model_name = re.escape(info["model_name"])
         return rf'^\s*[A-Za-z]?{model_name}[A-Za-z]?\s*$'
 
+    found = HORIZONTAL_FIND.search(_normalize_model(curve_number))
+    if found:
+        discharge = found.group(1)
+        family_code = _horizontal_code(found.group(2))
+        casing = found.group(3)
+        if family_code in ("AE", "AEF"):
+            family = r"AEF?"
+        elif family_code == "TU":
+            family = r"TU(?!T)"
+        elif family_code == "TUT":
+            family = r"TUT(?![A-Za-z])"
+        else:
+            family = re.escape(family_code)
+        return (
+            rf'^\s*[A-Za-z]?\s*{re.escape(discharge)}\s*{family}\s*'
+            rf'{re.escape(casing)}\s*(?:[A-Za-z]\d*)?\s*(?:-\s*\d+)?\s*$'
+        )
+
     # Fallback: literal match
     return re.escape(curve_number)
