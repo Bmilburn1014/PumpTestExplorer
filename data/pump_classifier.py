@@ -121,6 +121,15 @@ _KNOWN_BASE_MODELS = {"MA", "HXB", "GLME", "HH", "HHOH", "MB", "MD", "MC", "HXC"
 _HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT"}
 
 
+def _normalize_model(text: str) -> str:
+    """Make curve names comparable. Excel often uses odd dash characters."""
+    text = str(text or "").strip()
+    for dash in ("\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2212", "\u00ad"):
+        text = text.replace(dash, "-")
+    text = text.replace("/", "-").replace("\\", "")
+    return " ".join(text.split())
+
+
 def _horizontal_code(code: str) -> str:
     """Map a matched code to its family. AES and similar AE typos are AE."""
     code = (code or "").upper()
@@ -174,7 +183,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     Returns:
         PumpClassification with routing info
     """
-    text = str(model_or_curve).strip()
+    text = _normalize_model(model_or_curve)
 
     # -- 1. Try inline pump pattern first (most specific) --------------
     match = INLINE_PATTERN.search(text)
@@ -343,7 +352,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
     For curve numbers like "10PV14-1780"
         -> discharge_size=10, bowl_or_casing=14, speed=1780
     """
-    text = str(model_or_curve).strip()
+    text = _normalize_model(model_or_curve)
 
     # Try inline pattern first
     m = re.match(
