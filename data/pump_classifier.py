@@ -57,10 +57,11 @@ INLINE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Horizontal: digits, then AE/AEF/TU/TUT, then digits
-# Optionally followed by a letter suffix and/or -digits for speed
+# Horizontal: digits, then AE/AEF/TU/TUT, then digits.
+# Longest code first so TUT is not read as TU, and AEF is not read as AE.
+# AE and AEF are the same family. TU and TUT are different models.
 HORIZONTAL_PATTERN = re.compile(
-    r'^(\d+)(AEF?|TUT?)(\d+)([A-Za-z]?)(?:-(\d+))?$',
+    r'^(\d+)(AEF|AE|TUT|TU)(\d+)([A-Za-z]?)(?:-(\d+))?$',
     re.IGNORECASE,
 )
 
@@ -415,8 +416,9 @@ def build_model_search_pattern(curve_number: str) -> str:
     For inline "2.5PVF8-3520":
         Matches "2.5PVF8", "2.5PV8", etc.
 
-    For horizontal "4AE12":
-        Matches "4AE12", "4AEF12", etc.
+    For horizontal "4AE12" or "4AEF12":
+        Matches both "4AE12" and "4AEF12".
+        "4TU12" matches only TU. "4TUT12" matches only TUT.
 
     For end suction "F1020":
         Matches "F1020"
@@ -444,11 +446,18 @@ def build_model_search_pattern(curve_number: str) -> str:
         model_code = re.escape(info["model_code"])
         casing = str(info["bowl_or_casing"]) if info["bowl_or_casing"] else ""
         variant = info.get("variant", "")
-        # Match the discharge + model code (with optional trailing F/T) + casing
-        if variant:
-            return rf'^\s*{re.escape(discharge)}\s*{model_code}F?\s*{re.escape(casing)}{re.escape(variant)}\s*$'
+        # AE and AEF are the same family. TU must not match TUT.
+        code = info["model_code"].upper()
+        if code in ("AE", "AEF"):
+            family = r"AEF?"
+        elif code == "TU":
+            family = r"TU(?!T)"
+        elif code == "TUT":
+            family = r"TUT"
         else:
-            return rf'^\s*{re.escape(discharge)}\s*{model_code}F?\s*{re.escape(casing)}\s*$'
+            family = model_code
+        tail = re.escape(variant) if variant else ""
+        return rf'^\s*{re.escape(discharge)}\s*{family}\s*{re.escape(casing)}{tail}\s*$'
 
     # End suction pump
     if info.get("series") is not None:
