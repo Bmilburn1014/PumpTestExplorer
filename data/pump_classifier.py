@@ -65,6 +65,12 @@ HORIZONTAL_PATTERN = re.compile(
     r'\s*([A-Za-z]\d*)?(?:\s*-\s*(\d+))?\s*$',
     re.IGNORECASE,
 )
+# Same token anywhere in the string, so extra curve text cannot fall to vertical.
+HORIZONTAL_FIND = re.compile(
+    r'(\d+)\s*(AEF|AE[A-Za-z]*|TUT|TU)\s*(\d+)'
+    r'\s*([A-Za-z]\d*)?(?:\s*-\s*(\d+))?',
+    re.IGNORECASE,
+)
 
 # End suction: F or C followed by 3-4 digits, optionally -digits for speed
 END_SUCTION_PATTERN = re.compile(
@@ -192,7 +198,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
         )
 
     # -- 2. Try horizontal pump pattern --------------------------------
-    match = HORIZONTAL_PATTERN.match(text)
+    match = HORIZONTAL_PATTERN.match(text) or HORIZONTAL_FIND.search(text)
     if match:
         discharge = match.group(1)
         model_code = _horizontal_code(match.group(2))
@@ -291,7 +297,23 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
             detail_path=f"{bowl}{base_model}",
         )
 
-    # -- 5. Fallback: generic vertical ----------------------------------
+    # -- 5. Horizontal token anywhere beats the vertical fallback ------
+    match = HORIZONTAL_FIND.search(text)
+    if match:
+        return PumpClassification(
+            pump_type="horizontal",
+            model_match=match.group(0),
+            index_name="ppu_test_log",
+            trim_column="material_2",
+            raw_model=text,
+            speed_from_model=int(match.group(5)) if match.group(5) else None,
+            discharge_size=float(match.group(1)),
+            base_model_name=_horizontal_code(match.group(2)),
+            bowl_diameter=int(match.group(3)),
+            test_iteration_column="Test No..1",
+        )
+
+    # -- 6. Fallback: generic vertical ----------------------------------
     return PumpClassification(
         pump_type="vertical",
         model_match=text,
@@ -341,8 +363,8 @@ def extract_pump_size(model_or_curve: str) -> dict:
             "speed": int(m.group(4)) if m.group(4) else None,
         }
 
-    # Try horizontal pattern
-    m = HORIZONTAL_PATTERN.match(text)
+    # Try horizontal pattern, including extra curve text
+    m = HORIZONTAL_PATTERN.match(text) or HORIZONTAL_FIND.search(text)
     if m:
         return {
             "discharge_size": float(m.group(1)),
