@@ -14,7 +14,7 @@
 #
 #   HORIZONTAL PUMP:
 #     Model format: {digits}{AE|AEF|TU|TUT}{digits}
-#     Pattern: \d+(?:AEF?|TUT?)\d+
+#     AE and AEF are one family. TU and TUT are different models.
 #     Examples: 4AE12, 4AEF12, 4TU12, 4TUT12
 #     Index: PPU Dailey Hor Inl Std Test Log Rotation
 #     Trim column: "material_2"
@@ -61,7 +61,8 @@ INLINE_PATTERN = re.compile(
 # Longest code first so TUT is not read as TU, and AEF is not read as AE.
 # AE and AEF are the same family. TU and TUT are different models.
 HORIZONTAL_PATTERN = re.compile(
-    r'^(\d+)(AEF|AE|TUT|TU)(\d+)([A-Za-z]?)(?:-(\d+))?$',
+    r'^\s*(?:[A-Za-z]\s*)?(\d+)\s*(AEF|AE|TUT|TU)\s*(\d+)'
+    r'\s*([A-Za-z])?(?:\s*-\s*(\d+))?\s*$',
     re.IGNORECASE,
 )
 
@@ -77,9 +78,11 @@ END_SUCTION_PATTERN = re.compile(
 VERTICAL_PATTERN = re.compile(
     r'^(?P<prefix>[A-Za-z])?'
     r'(?P<bowl>\d{1,2})'
-    r'(?P<letters>[A-Za-z]+)'
+    # Horizontal families are not vertical models.
+    r'(?P<letters>(?!(?:AEF|AE|TUT|TU)(?![A-Za-z]))[A-Za-z]+)'
     r'(?P<trailing>\d{0,2}[A-Za-z]?)'
     r'(?:-(?P<suffix>[A-Za-z0-9]+))?$',
+    re.IGNORECASE,
 )
 
 
@@ -453,11 +456,15 @@ def build_model_search_pattern(curve_number: str) -> str:
         elif code == "TU":
             family = r"TU(?!T)"
         elif code == "TUT":
-            family = r"TUT"
+            family = r"TUT(?![A-Za-z])"
         else:
             family = model_code
-        tail = re.escape(variant) if variant else ""
-        return rf'^\s*{re.escape(discharge)}\s*{family}\s*{re.escape(casing)}{tail}\s*$'
+        # A leading letter is a prefix, not part of the model to require.
+        # Allow an optional variant letter and speed suffix in the index.
+        return (
+            rf'^\s*[A-Za-z]?\s*{re.escape(discharge)}\s*{family}\s*'
+            rf'{re.escape(casing)}\s*[A-Za-z]?\s*(?:-\s*\d+)?\s*$'
+        )
 
     # End suction pump
     if info.get("series") is not None:
