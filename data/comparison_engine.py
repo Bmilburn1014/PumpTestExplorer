@@ -94,10 +94,8 @@ from datetime import datetime
 from dataclasses import dataclass, field
 
 from data.px_curves import read_px_curves, PXCurveSet, TrimCurve
-from data.pump_classifier import (
-    classify_pump, PumpClassification,
-    build_model_search_pattern, extract_pump_size,
-)
+from data.pump_classifier import classify_pump, PumpClassification,build_model_search_pattern
+
 from data.affinity import (
     scale_test_to_baseline, estimate_deviation_warning,
     compute_specific_speed, dicmas_exponents,

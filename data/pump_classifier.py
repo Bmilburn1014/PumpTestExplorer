@@ -52,7 +52,7 @@ from dataclasses import dataclass
 # Inline: digits (with optional decimal), then PV or PVF, then digits
 # (optionally followed by a letter), then optionally -digits for speed
 INLINE_PATTERN = re.compile(
-    r'\d\.?\d*PVF?\d*[A-Z]?(?:-\d+)',
+    r'(\d\.?\d*)PVF?(\d*)([A-Z]?)-(\d+)',
     re.IGNORECASE,
 )
 
@@ -85,7 +85,7 @@ VERTICAL_PATTERN = re.compile(
     r'^(?P<prefix>[A-Za-z])?'
     r'(?P<bowl>\d{1,2})'
     # Horizontal families are not vertical models.
-    r'(?P<letters>(?!(?:AEF|AE|TUT|TU|PV|PVF))[A-Za-z]+)'
+    r'(?P<letters>(?!(?:AEF|AE|TUT|TU))[A-Za-z]+)'
     r'(?P<trailing>\d{0,2}[A-Za-z]?)'
     r'(?:-(?P<suffix>[A-Za-z0-9]+))?$',
     re.IGNORECASE,
@@ -118,7 +118,7 @@ class PumpClassification:
 _KNOWN_BASE_MODELS = {"MA", "HXB", "GLME", "HH", "HHOH", "MB", "MD", "MC", "HXC", "LA", "LB", "LC", "LD"}
 
 # -- Known horizontal model codes (used to disambiguate from VT) --------
-_HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT","PV", "PVF"}
+_HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT"}
 
 
 def _normalize_model(text: str) -> str:
@@ -141,10 +141,6 @@ def _horizontal_code(code: str) -> str:
         return "TUT"
     if code.startswith("TU"):
         return "TU"
-    if code.startswith("PVF"):
-        return "PVF"
-    if code.startswith("PV"):
-        return "PV"
     return code
 
 
@@ -192,13 +188,17 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     # -- 1. Try inline pump pattern first (most specific) --------------
     match = INLINE_PATTERN.search(text)
     if match:
+        print(f"Inline match: {match.groups()}", flush=True)
         matched = match.group()
+        print(f"Matched inline model: {matched}", flush=True)
 
         # Try to extract speed from the model (e.g., "2.5PVF8-3520")
         speed = None
         speed_match = re.search(r'-(\d{3,4})$', text)
+        print(f"Speed match: {speed_match}", flush=True)
         if speed_match:
             speed = int(speed_match.group(1))
+            print(f"Extracted speed: {speed}", flush=True)
 
         return PumpClassification(
             pump_type="inline",
@@ -213,6 +213,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     # -- 2. Try horizontal pump pattern --------------------------------
     match = HORIZONTAL_PATTERN.match(text) or HORIZONTAL_FIND.search(text)
     if match:
+        print(f"Horizontal match: {match.groups()}", flush=True)
         discharge = match.group(1)
         model_code = _horizontal_code(match.group(2))
         casing = match.group(3)
@@ -236,6 +237,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     # -- 3. Try end suction pump pattern -------------------------------
     match = END_SUCTION_PATTERN.match(text)
     if match:
+        print(f"End suction match: {match.groups()}", flush=True)
         series = match.group(1).upper()
         model_num = match.group(2)
         speed_str = match.group(3)
@@ -256,6 +258,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     # -- 4. Vertical pump -----------------------------------------------
     match = VERTICAL_PATTERN.match(text)
     if match:
+        print(f"Vertical match: {match.groups()}", flush=True)
         # Guard: if the letter code is a horizontal code, don't treat
         # as vertical.  This shouldn't happen because HORIZONTAL_PATTERN
         # fires first, but protects against edge cases with prefixes.
@@ -313,6 +316,7 @@ def classify_pump(model_or_curve: str) -> PumpClassification:
     # -- 5. Horizontal token anywhere beats the vertical fallback ------
     match = HORIZONTAL_FIND.search(text)
     if match:
+        print(f"Horizontal token found in fallback: {match.groups()}", flush=True)
         return PumpClassification(
             pump_type="horizontal",
             model_match=match.group(0),
@@ -359,11 +363,10 @@ def extract_pump_size(model_or_curve: str) -> dict:
     text = _normalize_model(model_or_curve)
 
     # Try inline pattern first
-    m = re.match(
-        r'(\d+\.?\d*)PVF?(\d+)([A-Za-z]?)(?:-(\d+))?',
-        text, re.IGNORECASE,
-    )
+    m = INLINE_PATTERN.match(text)
+    
     if m:
+        print(f"Inline match in extract_pump_size: {m.groups()}", flush=True)
         return {
             "discharge_size": float(m.group(1)),
             "bowl_or_casing": int(m.group(2)),
@@ -379,6 +382,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
     # Try horizontal pattern, including extra curve text
     m = HORIZONTAL_PATTERN.match(text) or HORIZONTAL_FIND.search(text)
     if m:
+        print(f"Horizontal match: {m.groups()}", flush=True)
         return {
             "discharge_size": float(m.group(1)),
             "bowl_or_casing": int(m.group(3)),
@@ -394,6 +398,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
     # Try end suction pattern
     m = END_SUCTION_PATTERN.match(text)
     if m:
+        print(f"End suction match: {m.groups()}", flush=True)
         return {
             "discharge_size": None,
             "bowl_or_casing": None,
@@ -410,6 +415,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
     # Try VT pattern
     m = VERTICAL_PATTERN.match(text)
     if m:
+        print(f"Vertical match: {m.groups()}", flush=True)
         # Check for horizontal codes caught by VT pattern
         letters = m.group("letters")
         if letters.upper() in _HORIZONTAL_CODES:
@@ -452,7 +458,7 @@ def extract_pump_size(model_or_curve: str) -> dict:
             "speed": None,
             "perf_suffix": perf,
         }
-
+    print(f"No match for model/curve: {text}", flush=True)
     return {
         "discharge_size": None, "bowl_or_casing": None,
         "model_name": None, "model_code": None, "series": None,
@@ -483,13 +489,17 @@ def build_model_search_pattern(curve_number: str) -> str:
     Returns a string suitable for pandas .str.contains().
     """
     info = extract_pump_size(curve_number)
-
+    print(f"Extracted info: {info}", flush=True)
     # Inline pump
     if info["discharge_size"] is not None and info.get("model_code") is None:
+        print(f"Inline pump: {info}", flush=True)
         discharge = str(info["discharge_size"])
         if discharge.endswith(".0"):
             discharge = discharge[:-2]
         casing = str(info["bowl_or_casing"])
+        if info.get("variant"):
+            variant = re.escape(info["variant"])
+            return rf'{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}{variant}'
         return rf'{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}'
 
     # Horizontal pump
