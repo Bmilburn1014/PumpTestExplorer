@@ -226,13 +226,18 @@ def read_px_curves(filepath: str) -> PXCurveSet:
     diameters = []
     for row in range(DATA_START_ROW, DATA_END_ROW + 1):
         val = _num(cell(row, 1)) # Impeller diameter in column A
+        print(val)
         hub_side_val = _num(cell(row, 2)) # Hub side diameter in column B
+        print(hub_side_val)
         if hub_side_val is not None and hub_side_val > 0 and val is not None and val > 0:
             diameter = (val + hub_side_val) / 2
+            print(f"Conical impeller: {val} / {hub_side_val} → {diameter}")
             diameters.append(diameter)
         elif val is not None and val > 0:
+            print(f"Single diameter: {val}")
             diameters.append(val)
         else:
+            print(f"Stopping diameter read at row {row}: val={val}, hub_side_val={hub_side_val}")
             # Stop reading when we hit a blank or non-numeric cell
             break
     if not diameters:

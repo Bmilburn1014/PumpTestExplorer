@@ -52,7 +52,7 @@ from dataclasses import dataclass
 # Inline: digits (with optional decimal), then PV or PVF, then digits
 # (optionally followed by a letter), then optionally -digits for speed
 INLINE_PATTERN = re.compile(
-    r'\d+\.?\d*PVF?\d+(?:-\d+)([A-Za-z]?)?',
+    r'\d\.?\d*PVF?\d*[A-Z]?(?:-\d+)',
     re.IGNORECASE,
 )
 
@@ -85,7 +85,7 @@ VERTICAL_PATTERN = re.compile(
     r'^(?P<prefix>[A-Za-z])?'
     r'(?P<bowl>\d{1,2})'
     # Horizontal families are not vertical models.
-    r'(?P<letters>(?!(?:AEF|AE|TUT|TU))[A-Za-z]+)'
+    r'(?P<letters>(?!(?:AEF|AE|TUT|TU|PV|PVF))[A-Za-z]+)'
     r'(?P<trailing>\d{0,2}[A-Za-z]?)'
     r'(?:-(?P<suffix>[A-Za-z0-9]+))?$',
     re.IGNORECASE,
@@ -118,7 +118,7 @@ class PumpClassification:
 _KNOWN_BASE_MODELS = {"MA", "HXB", "GLME", "HH", "HHOH", "MB", "MD", "MC", "HXC", "LA", "LB", "LC", "LD"}
 
 # -- Known horizontal model codes (used to disambiguate from VT) --------
-_HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT"}
+_HORIZONTAL_CODES = {"AE", "AEF", "TU", "TUT","PV", "PVF"}
 
 
 def _normalize_model(text: str) -> str:
@@ -141,6 +141,10 @@ def _horizontal_code(code: str) -> str:
         return "TUT"
     if code.startswith("TU"):
         return "TU"
+    if code.startswith("PVF"):
+        return "PVF"
+    if code.startswith("PV"):
+        return "PV"
     return code
 
 
