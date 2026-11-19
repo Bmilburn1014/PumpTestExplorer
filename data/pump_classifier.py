@@ -499,8 +499,8 @@ def build_model_search_pattern(curve_number: str) -> str:
         casing = str(info["bowl_or_casing"])
         if info.get("variant"):
             variant = re.escape(info["variant"])
-            return rf'{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}{variant}'
-        return rf'{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}'
+            return rf'^{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}{variant}$'
+        return rf'^{re.escape(discharge)}\.?0?PVF?{re.escape(casing)}$'
 
     # Horizontal pump
     if info.get("model_code") in _HORIZONTAL_CODES:

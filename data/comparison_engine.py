@@ -984,7 +984,7 @@ class ComparisonEngine:
             diag.append(f"Sample models: {sample}")
 
             mask = df["pump_model"].astype(str).str.contains(
-                model_pattern, case=False, na=False, regex=True,
+                model_pattern, case=False, na=False, regex=True
             )
             df_filtered = df[mask]
             diag.append(f"After model filter: {len(df_filtered)} rows "
